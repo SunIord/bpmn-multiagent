@@ -6,9 +6,9 @@ bpmn-multiagent/
 ├── pyproject.toml                  # (ou requirements.txt / package.json — a definir pela equipe de stack)
 │
 ├── docs/
-│   ├── architecture.md             # Documento de arquitetura (este sprint)
-│   ├── bottleneck-analysis.md      # Análise de gargalos (já produzida)
-│   ├── planning.md                 # Planejamento ágil (já produzido)
+│   ├── architecture.txt             # Documento de arquitetura 
+│   ├── bottleneck-analysis.pdf      # Análise de gargalos 
+│   ├── planning.pdf                 # Planejamento ágil 
 │   └── decisions/
 │       └── ADR-001-multiagent.md   # Architecture Decision Record: escolha multiagente
 │
