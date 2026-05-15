@@ -3,14 +3,18 @@ bpmn-multiagent/
 ├── README.md
 ├── .gitignore
 ├── .env.example
-├── pyproject.toml                  # (ou requirements.txt / package.json — a definir pela equipe de stack)
+├── pyproject.toml
 │
 ├── docs/
 │   ├── architecture.txt             # Documento de arquitetura 
-│   ├── bottleneck-analysis.pdf      # Análise de gargalos 
-│   ├── planning.pdf                 # Planejamento ágil 
+│   ├── agent-specification.md        # Especificação funcional dos agentes
+│   ├── bottleneck-analysis.pdf
+│   ├── planning.pdf
 │   └── decisions/
-│       └── ADR-001-multiagent.md   # Architecture Decision Record: escolha multiagente
+│       ├── ADR-001-multiagent.md
+│       ├── ADR-002-langgraph.md
+│       ├── ADR-003-lxml.md
+│       └── ADR-004-processmodel.md
 │
 ├── data/
 │   ├── inputs/
