@@ -1,0 +1,13 @@
+Um cliente faz um pedido online. O sistema verifica se há estoque disponível. Se houver estoque, o sistema separa o pedido
+e emite a nota fiscal, e o processo é encerrado com sucesso. Se não houver estoque, o sistema notifica o cliente sobre 
+a indisponibilidade e o processo é encerrado.
+---
+Um funcionário solicita reembolso de despesas ao RH. O gerente analisa a solicitação. Se o valor do reembolso for menor que 500 reais, o 
+gerente aprova diretamente. Se for maior ou igual a 500 reais, o gerente encaminha a solicitação para o diretor financeiro aprovar. 
+Após qualquer aprovação, o RH processa o pagamento e o processo encerra. Se a solicitação for reprovada em qualquer etapa, o funcionário 
+é notificado e o processo encerra.
+---
+Um paciente chega à recepção de uma clínica e realiza o cadastro. A recepcionista verifica se o paciente possui convênio médico. 
+Se possuir convênio, o sistema valida a cobertura do plano. Se o convênio for válido, o paciente é encaminhado para a triagem de enfermagem. 
+Se o convênio não for válido ou o paciente não possuir convênio, o paciente é informado sobre o pagamento particular e decide se deseja prosseguir. 
+Se decidir prosseguir, é encaminhado para a triagem. Após a triagem, o médico realiza o atendimento e emite o laudo. O processo encerra com a saída do paciente.
