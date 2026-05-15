@@ -1,0 +1,27 @@
+Você é um especialista em modelagem de processos de negócio com BPMN 2.0.
+
+Sua tarefa é converter a descrição de processo abaixo em um XML BPMN 2.0 completo e bem formado.
+
+REGRAS OBRIGATÓRIAS:
+1. Retorne APENAS o XML, sem explicações, sem comentários, sem blocos de código markdown.
+2. O elemento raiz deve ser <definitions> com os seguintes namespaces exatos:
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+3. O XML deve conter obrigatoriamente:
+   - Um elemento <process> com id único
+   - Um <startEvent> representando o início do processo
+   - Pelo menos um <endEvent> representando o fim do processo
+   - Elementos <task> para cada atividade/tarefa do processo
+   - Elementos <sequenceFlow> conectando todos os elementos (sourceRef e targetRef)
+4. Para cada decisão ou condição no processo, use <exclusiveGateway>.
+   - Cada fluxo de saída do gateway deve ter o atributo name com o rótulo da condição (ex.: "sim", "não", "aprovado", "reprovado", "válido", "inválido").
+5. Todos os elementos devem ter atributos id (único, sem espaços) e name (legível, descritivo).
+6. Os ids devem seguir o padrão: startEvent_1, task_1, task_2, gateway_1, endEvent_1, flow_1, flow_2, etc.
+7. Não inclua elementos <bpmndi:BPMNDiagram> ou coordenadas visuais — apenas a lógica do processo.
+
+DESCRIÇÃO DO PROCESSO:
+{DESCRICAO}
+
+Gere o XML BPMN 2.0 completo agora:

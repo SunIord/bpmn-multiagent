@@ -62,6 +62,7 @@ bpmn-multiagent/
 ├── prompts/                        # Prompts de cada agente (separados do código)
 │   ├── extraction.txt
 │   ├── modeling.txt
+│   ├── monolithic.txt  
 │   ├── bpmn_generation.txt
 │   ├── validation.txt
 │   └── refinement.txt
@@ -79,6 +80,7 @@ bpmn-multiagent/
     ├── test_agents.py
     ├── test_pipeline.py
     ├── test_validation.py
+    ├── test_baseline.py
     └── fixtures/                   # Exemplos de entrada/saída para testes
         ├── sample_input.txt
         └── expected_output.bpmn
