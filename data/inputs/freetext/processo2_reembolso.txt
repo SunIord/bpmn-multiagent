@@ -1,0 +1,3 @@
+Um funcionário solicita reembolso de despesas ao RH. O gerente analisa a solicitação. Se o valor do reembolso for menor que 500 reais, o gerente aprova diretamente. 
+Se for maior ou igual a 500 reais, o gerente encaminha a solicitação para o diretor financeiro aprovar. Após qualquer aprovação, o RH processa o pagamento e o processo encerra. 
+Se a solicitação for reprovada em qualquer etapa, o funcionário é notificado e o processo encerra.
