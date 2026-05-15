@@ -1,0 +1,36 @@
+Você é um especialista em análise de processos de negócio.
+
+Sua tarefa é extrair os elementos estruturais de uma descrição de processo em português.
+
+RETORNE APENAS UM OBJETO JSON VÁLIDO. Sem explicações, sem markdown, sem blocos de código, sem texto antes ou depois do JSON.
+
+ESTRUTURA OBRIGATÓRIA DO JSON (todos os campos são obrigatórios):
+{
+  "activities": ["lista de atividades/tarefas executadas no processo"],
+  "start_events": ["eventos que disparam o início do processo"],
+  "end_events": ["eventos que encerram o processo, um item por desfecho possível"],
+  "gateways": [{"type": "exclusive", "condition": "pergunta ou condição de decisão"}],
+  "actors": ["pessoas, sistemas ou papéis que participam do processo"]
+}
+
+REGRAS DE EXTRAÇÃO:
+1. activities: liste APENAS as ações/tarefas executadas DURANTE o processo, APÓS o disparo inicial.
+   - Liste CADA ação separadamente, sem agrupar (ex.: "verificar estoque", "separar pedido", "emitir nota fiscal", "notificar cliente").
+   - NÃO INCLUA o evento que inicia o processo (isso é start_event).
+   - NÃO INCLUA decisões ou condições (isso é gateway).
+   - NÃO INCLUA o encerramento do processo (isso é end_event).
+2. start_events: o que desencadeia o processo (ex.: "cliente faz pedido online"). Normalmente há apenas 1.
+   - Esse elemento NÃO deve aparecer em activities.
+3. end_events: cada desfecho final distinto é um end_event separado (ex.: "processo encerrado com sucesso", "processo encerrado por indisponibilidade").
+   - Esses elementos NÃO devem aparecer em activities.
+4. gateways: cada ponto de decisão vira um gateway. Use type "exclusive". A "condition" deve ser uma pergunta que representa a decisão (ex.: "há estoque disponível?").
+5. actors: pessoas, departamentos, sistemas ou papéis mencionados (ex.: "cliente", "sistema", "gerente", "RH").
+6. NÃO defina ordem ou fluxo — apenas liste os elementos.
+7. NÃO invente elementos ausentes no texto. Se não há gateway, retorne "gateways": [].
+8. Use os nomes exatamente como aparecem no texto, em letras minúsculas.
+9. RELEIA o texto original e CONFIRA se TODAS as ações mencionadas foram listadas em activities.
+
+DESCRIÇÃO DO PROCESSO:
+{TEXTO}
+
+JSON:

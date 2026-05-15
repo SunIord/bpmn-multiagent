@@ -81,6 +81,7 @@ bpmn-multiagent/
     ├── test_pipeline.py
     ├── test_validation.py
     ├── test_baseline.py
+    ├── test_multiagent.py 
     └── fixtures/                   # Exemplos de entrada/saída para testes
         ├── sample_input.txt
         └── expected_output.bpmn
