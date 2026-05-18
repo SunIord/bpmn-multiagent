@@ -9,6 +9,7 @@ bpmn-multiagent/
 │   ├── architecture.txt             # Documento de arquitetura 
 │   ├── agent-specification.md        # Especificação funcional dos agentes
 │   ├── sprint1_comparison.md
+│   ├── setup_ollama.md
 │   ├── bottleneck-analysis.pdf
 │   ├── planning.pdf
 │   └── decisions/
