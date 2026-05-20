@@ -28,6 +28,40 @@ REGRAS OBRIGATÓRIAS:
 6. Siga a lógica descrita no texto original — não invente caminhos não mencionados.
 7. Se um gateway tem múltiplas saídas, todos os caminhos devem eventualmente chegar a um end_event.
 
+EXEMPLO:
+
+Texto original do processo:
+"Um cliente faz um pedido online. O sistema verifica se há estoque disponível. Se houver estoque, o sistema separa o pedido e emite a nota fiscal, e o processo é encerrado com sucesso. Se não houver estoque, o sistema notifica o cliente sobre a indisponibilidade e o processo é encerrado."
+
+Eventos de início:
+  - cliente faz um pedido online
+
+Atividades:
+  - verificar estoque disponível
+  - separar pedido
+  - emitir nota fiscal
+  - notificar cliente sobre indisponibilidade
+
+Gateways (decisões):
+  - "há estoque disponível?" (tipo: exclusive)
+
+Eventos de fim:
+  - processo encerrado com sucesso
+  - processo encerrado por indisponibilidade
+
+JSON:
+{
+  "sequences": [
+    {"source": "cliente faz um pedido online", "target": "verificar estoque disponível", "condition": null},
+    {"source": "verificar estoque disponível", "target": "há estoque disponível?", "condition": null},
+    {"source": "há estoque disponível?", "target": "separar pedido", "condition": "sim"},
+    {"source": "há estoque disponível?", "target": "notificar cliente sobre indisponibilidade", "condition": "não"},
+    {"source": "separar pedido", "target": "emitir nota fiscal", "condition": null},
+    {"source": "emitir nota fiscal", "target": "processo encerrado com sucesso", "condition": null},
+    {"source": "notificar cliente sobre indisponibilidade", "target": "processo encerrado por indisponibilidade", "condition": null}
+  ]
+}
+
 ELEMENTOS EXTRAÍDOS DO PROCESSO:
 
 Texto original do processo:

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_2"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+
+  <process id="Process_ReembolsoDespesas" isExecutable="false">
+
+    <startEvent id="StartEvent_1" name="funcionário solicita reembolso"/>
+
+    <task id="Task_1" name="gerente analisa solicitação"/>
+
+    <exclusiveGateway id="Gateway_1" name="valor menor que 500 reais?"/>
+
+    <task id="Task_2" name="gerente aprova reembolso"/>
+
+    <task id="Task_3" name="gerente encaminha para diretor financeiro"/>
+
+    <task id="Task_4" name="diretor financeiro aprova"/>
+
+    <task id="Task_5" name="RH processa pagamento"/>
+
+    <task id="Task_6" name="notificar funcionário sobre reprovação"/>
+
+    <endEvent id="EndEvent_1" name="processo encerrado com sucesso"/>
+
+    <endEvent id="EndEvent_2" name="processo encerrado por reprovação"/>
+
+    <sequenceFlow id="sf_1" sourceRef="StartEvent_1" targetRef="Task_1"/>
+    <sequenceFlow id="sf_2" sourceRef="Task_1" targetRef="Gateway_1"/>
+    <sequenceFlow id="sf_3" sourceRef="Gateway_1" targetRef="Task_2" name="sim"/>
+    <sequenceFlow id="sf_4" sourceRef="Gateway_1" targetRef="Task_3" name="não"/>
+    <sequenceFlow id="sf_5" sourceRef="Task_2" targetRef="Task_5"/>
+    <sequenceFlow id="sf_6" sourceRef="Task_3" targetRef="Task_4"/>
+    <sequenceFlow id="sf_7" sourceRef="Task_4" targetRef="Task_5"/>
+    <sequenceFlow id="sf_8" sourceRef="Task_5" targetRef="EndEvent_1"/>
+    <sequenceFlow id="sf_9" sourceRef="Gateway_1" targetRef="Task_6" name="reprovado"/>
+    <sequenceFlow id="sf_10" sourceRef="Task_6" targetRef="EndEvent_2"/>
+
+  </process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_2">
+    <bpmndi:BPMNPlane id="BPMNPlane_2" bpmnElement="Process_ReembolsoDespesas"/>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

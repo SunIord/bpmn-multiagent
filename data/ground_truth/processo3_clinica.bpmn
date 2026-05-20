@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_3"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+
+  <process id="Process_Clinica" isExecutable="false">
+
+    <startEvent id="StartEvent_1" name="paciente chega à recepção"/>
+
+    <task id="Task_1" name="realizar cadastro"/>
+
+    <task id="Task_2" name="verificar se possui convênio médico"/>
+
+    <exclusiveGateway id="Gateway_1" name="possui convênio?"/>
+
+    <task id="Task_3" name="validar cobertura do plano"/>
+
+    <exclusiveGateway id="Gateway_2" name="convênio válido?"/>
+
+    <task id="Task_4" name="informar pagamento particular"/>
+
+    <exclusiveGateway id="Gateway_3" name="deseja prosseguir?"/>
+
+    <task id="Task_5" name="encaminhar para triagem de enfermagem"/>
+
+    <task id="Task_6" name="médico realiza atendimento"/>
+
+    <task id="Task_7" name="emitir laudo"/>
+
+    <endEvent id="EndEvent_1" name="processo encerrado com saída do paciente"/>
+
+    <sequenceFlow id="sf_1" sourceRef="StartEvent_1" targetRef="Task_1"/>
+    <sequenceFlow id="sf_2" sourceRef="Task_1" targetRef="Task_2"/>
+    <sequenceFlow id="sf_3" sourceRef="Task_2" targetRef="Gateway_1"/>
+    <sequenceFlow id="sf_4" sourceRef="Gateway_1" targetRef="Task_3" name="sim"/>
+    <sequenceFlow id="sf_5" sourceRef="Gateway_1" targetRef="Task_4" name="não"/>
+    <sequenceFlow id="sf_6" sourceRef="Task_3" targetRef="Gateway_2"/>
+    <sequenceFlow id="sf_7" sourceRef="Gateway_2" targetRef="Task_5" name="sim"/>
+    <sequenceFlow id="sf_8" sourceRef="Gateway_2" targetRef="Task_4" name="não"/>
+    <sequenceFlow id="sf_9" sourceRef="Task_4" targetRef="Gateway_3"/>
+    <sequenceFlow id="sf_10" sourceRef="Gateway_3" targetRef="Task_5" name="sim"/>
+    <sequenceFlow id="sf_11" sourceRef="Gateway_3" targetRef="EndEvent_1" name="não"/>
+    <sequenceFlow id="sf_12" sourceRef="Task_5" targetRef="Task_6"/>
+    <sequenceFlow id="sf_13" sourceRef="Task_6" targetRef="Task_7"/>
+    <sequenceFlow id="sf_14" sourceRef="Task_7" targetRef="EndEvent_1"/>
+
+  </process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_3">
+    <bpmndi:BPMNPlane id="BPMNPlane_3" bpmnElement="Process_Clinica"/>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

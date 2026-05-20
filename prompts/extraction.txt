@@ -30,6 +30,19 @@ REGRAS DE EXTRAÇÃO:
 8. Use os nomes exatamente como aparecem no texto, em letras minúsculas.
 9. RELEIA o texto original e CONFIRA se TODAS as ações mencionadas foram listadas em activities.
 
+EXEMPLO:
+
+Texto: "Um cliente faz um pedido online. O sistema verifica se há estoque disponível. Se houver estoque, o sistema separa o pedido e emite a nota fiscal, e o processo é encerrado com sucesso. Se não houver estoque, o sistema notifica o cliente sobre a indisponibilidade e o processo é encerrado."
+
+JSON:
+{
+  "activities": ["verificar estoque disponível", "separar pedido", "emitir nota fiscal", "notificar cliente sobre indisponibilidade"],
+  "start_events": ["cliente faz um pedido online"],
+  "end_events": ["processo encerrado com sucesso", "processo encerrado por indisponibilidade"],
+  "gateways": [{"type": "exclusive", "condition": "há estoque disponível?"}],
+  "actors": ["cliente", "sistema"]
+}
+
 DESCRIÇÃO DO PROCESSO:
 {TEXTO}
 

@@ -17,7 +17,7 @@ Fluxo de preenchimento:
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
 from typing import Any
 
 
@@ -25,17 +25,17 @@ def _default_validation() -> dict[str, Any]:
     return {"is_valid": False, "errors": [], "warnings": []}
 
 
-@dataclass
-class ProcessModel:
+class ProcessModel(BaseModel):
     """
     Estado completo de uma execução do pipeline multiagente.
 
-    Todos os campos com tipos mutáveis usam `field(default_factory=...)`
+    Usa Pydantic BaseModel para compatibilidade nativa com LangGraph.
+    Todos os campos com tipos mutáveis usam `Field(default_factory=...)`
     para evitar compartilhamento de estado entre instâncias.
     """
 
     # ── Metadados ─────────────────────────────────────────────────────────────
-    process_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    process_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     input_type: str = "freetext"   # freetext | structured | noisy
     iteration: int = 0
 
@@ -43,16 +43,16 @@ class ProcessModel:
     raw_input: str = ""
 
     # ── Preenchido pelo ExtractionAgent ───────────────────────────────────────
-    activities: list[str] = field(default_factory=list)
-    start_events: list[str] = field(default_factory=list)
-    end_events: list[str] = field(default_factory=list)
-    gateways: list[dict[str, str]] = field(default_factory=list)
+    activities: list[str] = Field(default_factory=list)
+    start_events: list[str] = Field(default_factory=list)
+    end_events: list[str] = Field(default_factory=list)
+    gateways: list[dict[str, str]] = Field(default_factory=list)
     # Cada gateway: {"type": "exclusive"|"parallel"|"inclusive", "condition": "..."}
 
-    actors: list[str] = field(default_factory=list)
+    actors: list[str] = Field(default_factory=list)
 
     # ── Preenchido pelo ModelingAgent ─────────────────────────────────────────
-    sequences: list[dict[str, str]] = field(default_factory=list)
+    sequences: list[dict[str, str]] = Field(default_factory=list)
     # Cada sequence: {"source": "...", "target": "...", "condition": "..."}
     # "condition" é opcional — presente apenas em arestas saindo de gateways.
 
@@ -60,11 +60,11 @@ class ProcessModel:
     bpmn_xml: str = ""
 
     # ── Preenchido pelo ValidationAgent ──────────────────────────────────────
-    validation: dict[str, Any] = field(default_factory=_default_validation)
+    validation: dict[str, Any] = Field(default_factory=_default_validation)
     # Estrutura: {"is_valid": bool, "errors": list[str], "warnings": list[str]}
 
     # ── Histórico de iterações (loop de refinamento) ──────────────────────────
-    history: list[dict[str, Any]] = field(default_factory=list)
+    history: list[dict[str, Any]] = Field(default_factory=list)
 
     # ── Métodos utilitários ───────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ class ProcessModel:
         Returns:
             Dicionário com o estado atual completo.
         """
-        snap = self.to_dict()
+        snap = self.model_dump()
         self.history.append(snap)
         return snap
 
@@ -89,21 +89,7 @@ class ProcessModel:
         Returns:
             Todos os campos do ProcessModel como dict Python.
         """
-        return {
-            "process_id": self.process_id,
-            "input_type": self.input_type,
-            "iteration": self.iteration,
-            "raw_input": self.raw_input,
-            "activities": list(self.activities),
-            "start_events": list(self.start_events),
-            "end_events": list(self.end_events),
-            "gateways": [dict(gw) for gw in self.gateways],
-            "actors": list(self.actors),
-            "sequences": [dict(sq) for sq in self.sequences],
-            "bpmn_xml": self.bpmn_xml,
-            "validation": dict(self.validation),
-            "history": self.history,
-        }
+        return self.model_dump()
 
     def is_complete(self) -> bool:
         """

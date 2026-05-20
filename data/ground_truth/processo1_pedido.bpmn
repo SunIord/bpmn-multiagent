@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_1"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+
+  <process id="Process_PedidoOnline" isExecutable="false">
+
+    <startEvent id="StartEvent_1" name="pedido realizado pelo cliente"/>
+
+    <task id="Task_1" name="verificar estoque"/>
+
+    <exclusiveGateway id="Gateway_1" name="estoque disponível?"/>
+
+    <task id="Task_2" name="separar pedido e emitir nota fiscal"/>
+
+    <task id="Task_3" name="notificar cliente sobre indisponibilidade"/>
+
+    <endEvent id="EndEvent_1" name="processo encerrado com sucesso"/>
+
+    <endEvent id="EndEvent_2" name="processo encerrado por indisponibilidade"/>
+
+    <sequenceFlow id="sf_1" sourceRef="StartEvent_1" targetRef="Task_1"/>
+    <sequenceFlow id="sf_2" sourceRef="Task_1" targetRef="Gateway_1"/>
+    <sequenceFlow id="sf_3" sourceRef="Gateway_1" targetRef="Task_2" name="sim"/>
+    <sequenceFlow id="sf_4" sourceRef="Gateway_1" targetRef="Task_3" name="não"/>
+    <sequenceFlow id="sf_5" sourceRef="Task_2" targetRef="EndEvent_1"/>
+    <sequenceFlow id="sf_6" sourceRef="Task_3" targetRef="EndEvent_2"/>
+
+  </process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_PedidoOnline"/>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

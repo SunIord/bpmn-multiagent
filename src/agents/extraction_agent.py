@@ -89,6 +89,13 @@ class ExtractionAgent(BaseAgent):
         # Usa .get() com fallback vazio para tolerar campos ausentes.
         state.activities = [str(a) for a in data.get("activities", [])]
         state.start_events = [str(s) for s in data.get("start_events", [])]
+
+        # Remove de activities qualquer item que já está em start_events (evita ID duplicado)
+        state.activities = [
+            a for a in state.activities
+            if a not in state.start_events
+        ]
+        
         state.end_events = [str(e) for e in data.get("end_events", [])]
         state.actors = [str(a) for a in data.get("actors", [])]
 
