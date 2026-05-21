@@ -19,7 +19,7 @@ Adotar uma **arquitetura multiagente** com 5 agentes especializados, orquestrado
 3. **BPMNAgent** — geração BPMN (fluxo → XML via lxml)
 4. **ValidationAgent** — validação estrutural e lógica
 5. **RefinementAgent** — refinamento de clareza e nomenclatura
-
+ root = etree.Element("definitions", nsmap=self.NSMAP)
 ## Consequências
 
 **Positivas:**

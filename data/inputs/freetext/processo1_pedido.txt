@@ -1,3 +1,0 @@
-Um cliente faz um pedido online. O sistema verifica se há estoque disponível. 
-Se houver estoque, o sistema separa o pedido e emite a nota fiscal, e o processo é encerrado com sucesso. 
-Se não houver estoque, o sistema notifica o cliente sobre a indisponibilidade e o processo é encerrado.

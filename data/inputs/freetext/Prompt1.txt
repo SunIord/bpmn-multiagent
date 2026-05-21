@@ -1,0 +1,26 @@
+reate a BPMN model for the following description:
+1. The interested party submits the application, solemn declaration, and supporting
+documents to the Transport and Communications Service (TCS), either in person or
+digitally via a specified link.
+2. The TCS official checks the completeness and correctness of the submitted documents.
+3. If omissions are identified:
+3.1. The applicant is informed of the need to provide additional documents.
+3.2. The process waits for one of two events to occur:
+– The applicant submits the missing documents, or
+– 15 days pass without submission.
+3.3. If no documents are submitted within 15 days, the process is terminated.
+3.4. If the missing documents are received, the check for completeness and
+correctness is repeated.
+4. If no omissions are identified (either initially or after resubmission), the TCS official
+registers the application.
+5. A Certificate of Submission of Request is issued to the applicant.
+6. If the applicant's current driving license has expired or will expire before the new one
+is issued, a provisional driving license is provided.
+7. The TCS official issues the driving license by making an electronic entry in the
+Driving License Register:
+7.1. As long as the license remains unissued, an automated reminder is sent to the
+responsible official every 5 working days.
+8. The TCS transmits the application data, both electronically and in printed form
+(including photo and signature), to the Passport Directorate of the Hellenic Police.
+9. The applicant receives the printed driving license in person from the TCS office where
+the application was submitted.
