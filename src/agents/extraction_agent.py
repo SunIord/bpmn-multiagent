@@ -85,23 +85,33 @@ class ExtractionAgent(BaseAgent):
                 f"Resposta (primeiros 300 chars): {preview}"
             ) from exc
 
-        # Popula o estado com os campos extraídos.
-        # Usa .get() com fallback vazio para tolerar campos ausentes.
-        state.activities = [str(a) for a in data.get("activities", [])]
-        state.start_events = [str(s) for s in data.get("start_events", [])]
+        # ── Parse de activities (formato antigo: lista de strings) ──
+        raw_activities = data.get("activities", [])
+        normalized_activities: list[dict[str, str]] = []
 
-        # Remove de activities qualquer item que já está em start_events (evita ID duplicado)
-        state.activities = [
-            a for a in state.activities
-            if a not in state.start_events
+        for item in raw_activities:
+            if isinstance(item, str):
+                name = item.strip()
+                if name:
+                    normalized_activities.append({"name": name, "actor": ""})
+
+        # ── Parse de start_events e end_events ──
+        start_events = [str(s).strip() for s in data.get("start_events", []) if str(s).strip()]
+        end_events = [str(e).strip() for e in data.get("end_events", []) if str(e).strip()]
+
+        # ── Remove de activities qualquer item cujo nome já está em start_events ──
+        start_event_names = set(start_events)
+        normalized_activities = [
+            act for act in normalized_activities
+            if act["name"] not in start_event_names
         ]
-        
-        state.end_events = [str(e) for e in data.get("end_events", [])]
-        state.actors = [str(a) for a in data.get("actors", [])]
 
-        # Gateways: garante que cada item é um dict com "type" e "condition"
+        # ── Parse de atores ──
+        actors = [str(a).strip() for a in data.get("actors", []) if str(a).strip()]
+
+        # ── Gateways ──
         raw_gateways = data.get("gateways", [])
-        state.gateways = [
+        gateways = [
             {
                 "type": str(gw.get("type", "exclusive")),
                 "condition": str(gw.get("condition", "")),
@@ -109,5 +119,12 @@ class ExtractionAgent(BaseAgent):
             for gw in raw_gateways
             if isinstance(gw, dict)
         ]
+
+        # ── Popula o estado ──
+        state.activities = normalized_activities
+        state.start_events = start_events
+        state.end_events = end_events
+        state.actors = actors
+        state.gateways = gateways
 
         return state

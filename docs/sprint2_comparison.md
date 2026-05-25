@@ -1,6 +1,6 @@
 # Comparação de Métricas — Baseline vs Multiagente (Sprint 2)
 
-**Data:** 2026-05-20
+**Data:** 2026-05-25
 **Modelo:** Mistral (Ollama local)
 
 ## Metodologia
@@ -14,28 +14,28 @@ Cada métrica retorna um score entre 0.0 e 1.0.
 
 | Métrica | Baseline | Multiagente | Melhoria |
 |---|---|---|---|
-| correctness | 0.8571 | 1.0000 | +0.1429 |
-| completeness | 0.9259 | 0.9563 | +0.0304 |
+| correctness | 1.0000 | 0.8571 | -0.1429 |
+| completeness | 0.8889 | 0.9397 | +0.0508 |
 | clarity | 1.0000 | 1.0000 | 0.0000 |
-| **Aggregate** | **0.9277** | **0.9854** | **+0.0577** |
+| **Aggregate** | **0.9630** | **0.9323** | **-0.0307** |
 
 ### Processo2 Reembolso
 
 | Métrica | Baseline | Multiagente | Melhoria |
 |---|---|---|---|
-| correctness | 1.0000 | 1.0000 | 0.0000 |
-| completeness | 0.9037 | 0.9524 | +0.0487 |
-| clarity | 0.9583 | 1.0000 | +0.0417 |
-| **Aggregate** | **0.9540** | **0.9841** | **+0.0301** |
+| correctness | 0.0000 | 0.8571 | +0.8571 |
+| completeness | 0.0000 | 0.9740 | +0.9740 |
+| clarity | 0.0000 | 1.0000 | +1.0000 |
+| **Aggregate** | **0.0000** | **0.9437** | **+0.9437** |
 
 ### Processo3 Clinica
 
 | Métrica | Baseline | Multiagente | Melhoria |
 |---|---|---|---|
-| correctness | 0.0000 | 1.0000 | +1.0000 |
-| completeness | 0.0000 | 0.9074 | +0.9074 |
-| clarity | 0.0000 | 1.0000 | +1.0000 |
-| **Aggregate** | **0.0000** | **0.9691** | **+0.9691** |
+| correctness | 0.8571 | 0.8571 | 0.0000 |
+| completeness | 0.8862 | 0.8307 | -0.0555 |
+| clarity | 1.0000 | 1.0000 | 0.0000 |
+| **Aggregate** | **0.9144** | **0.8959** | **-0.0185** |
 
 ## Conclusão
 

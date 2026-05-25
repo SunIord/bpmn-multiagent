@@ -9,27 +9,37 @@
 
   <process id="Process_Clinica" isExecutable="false">
 
+    <laneSet>
+      <lane id="lane_paciente" name="paciente">
+      </lane>
+      <lane id="lane_recepcionista" name="recepcionista">
+        <flowNodeRef id="Task_1"/>
+        <flowNodeRef id="Task_2"/>
+        <flowNodeRef id="Task_4"/>
+        <flowNodeRef id="Task_5"/>
+      </lane>
+      <lane id="lane_sistema" name="sistema">
+        <flowNodeRef id="Task_3"/>
+      </lane>
+      <lane id="lane_medico" name="médico">
+        <flowNodeRef id="Task_6"/>
+        <flowNodeRef id="Task_7"/>
+      </lane>
+    </laneSet>
+
     <startEvent id="StartEvent_1" name="paciente chega à recepção"/>
 
     <task id="Task_1" name="realizar cadastro"/>
-
     <task id="Task_2" name="verificar se possui convênio médico"/>
+    <task id="Task_3" name="validar cobertura do plano"/>
+    <task id="Task_4" name="informar pagamento particular"/>
+    <task id="Task_5" name="encaminhar para triagem de enfermagem"/>
+    <task id="Task_6" name="médico realiza atendimento"/>
+    <task id="Task_7" name="emitir laudo"/>
 
     <exclusiveGateway id="Gateway_1" name="possui convênio?"/>
-
-    <task id="Task_3" name="validar cobertura do plano"/>
-
     <exclusiveGateway id="Gateway_2" name="convênio válido?"/>
-
-    <task id="Task_4" name="informar pagamento particular"/>
-
     <exclusiveGateway id="Gateway_3" name="deseja prosseguir?"/>
-
-    <task id="Task_5" name="encaminhar para triagem de enfermagem"/>
-
-    <task id="Task_6" name="médico realiza atendimento"/>
-
-    <task id="Task_7" name="emitir laudo"/>
 
     <endEvent id="EndEvent_1" name="processo encerrado com saída do paciente"/>
 

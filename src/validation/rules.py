@@ -194,7 +194,7 @@ def validate_duplicate_ids(root: etree._Element) -> list[str]:
     Returns:
         Lista de erros para cada ID duplicado encontrado.
     """
-    all_ids = [el.get("id") for el in root.iter() if el.get("id")]
+    all_ids = [el.get("id") for el in root.iter() if el.get("id") and el.tag.split("}")[-1] != "flowNodeRef"]
     counts = Counter(all_ids)
     errors: list[str] = []
     for id_val, count in counts.items():

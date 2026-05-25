@@ -9,24 +9,34 @@
 
   <process id="Process_ReembolsoDespesas" isExecutable="false">
 
+    <laneSet>
+      <lane id="lane_funcionario" name="funcionário">
+      </lane>
+      <lane id="lane_gerente" name="gerente">
+        <flowNodeRef id="Task_1"/>
+        <flowNodeRef id="Task_2"/>
+        <flowNodeRef id="Task_3"/>
+        <flowNodeRef id="Task_6"/>
+      </lane>
+      <lane id="lane_diretor" name="diretor financeiro">
+        <flowNodeRef id="Task_4"/>
+      </lane>
+      <lane id="lane_rh" name="RH">
+        <flowNodeRef id="Task_5"/>
+      </lane>
+    </laneSet>
+
     <startEvent id="StartEvent_1" name="funcionário solicita reembolso"/>
 
     <task id="Task_1" name="gerente analisa solicitação"/>
-
+    <task id="Task_2" name="gerente aprova reembolso"/>
+    <task id="Task_3" name="gerente encaminha para diretor financeiro"/>
+    <task id="Task_4" name="diretor financeiro aprova"/>
+    <task id="Task_5" name="RH processa pagamento"/>
+    <task id="Task_6" name="notificar funcionário sobre reprovação"/>
     <exclusiveGateway id="Gateway_1" name="valor menor que 500 reais?"/>
 
-    <task id="Task_2" name="gerente aprova reembolso"/>
-
-    <task id="Task_3" name="gerente encaminha para diretor financeiro"/>
-
-    <task id="Task_4" name="diretor financeiro aprova"/>
-
-    <task id="Task_5" name="RH processa pagamento"/>
-
-    <task id="Task_6" name="notificar funcionário sobre reprovação"/>
-
     <endEvent id="EndEvent_1" name="processo encerrado com sucesso"/>
-
     <endEvent id="EndEvent_2" name="processo encerrado por reprovação"/>
 
     <sequenceFlow id="sf_1" sourceRef="StartEvent_1" targetRef="Task_1"/>

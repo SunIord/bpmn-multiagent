@@ -9,6 +9,16 @@
 
   <process id="Process_PedidoOnline" isExecutable="false">
 
+    <laneSet>
+      <lane id="lane_cliente" name="cliente">
+      </lane>
+      <lane id="lane_sistema" name="sistema">
+        <flowNodeRef id="Task_1"/>
+        <flowNodeRef id="Task_2"/>
+        <flowNodeRef id="Task_3"/>
+      </lane>
+    </laneSet>
+
     <startEvent id="StartEvent_1" name="pedido realizado pelo cliente"/>
 
     <task id="Task_1" name="verificar estoque"/>
