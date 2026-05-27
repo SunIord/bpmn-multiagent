@@ -1,23 +1,15 @@
-"""
-Regras de validação estrutural para BPMN 2.0.
-
-Todas as funções são determinísticas — sem LLM.
-Cada regra recebe a raiz do XML já parseada (lxml Element) e retorna
-uma lista de strings com mensagens de erro ou warning.
-
-A função principal `validate_all` recebe a string XML, aplica todas
-as regras e retorna um dicionário {"errors": [...], "warnings": [...]}.
-"""
-
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from lxml import etree
 
 BPMN_NS = "http://www.omg.org/spec/BPMN/20100524/MODEL"
-NS = {"bpmn": BPMN_NS}
 
-# Tipos de nós que podem ser source/target em sequenceFlows
+NS = {
+    "bpmn": BPMN_NS,
+    "bpmndi": "http://www.omg.org/spec/BPMN/20100524/DI",
+}
+
 _NODE_TAGS = (
     "startEvent",
     "endEvent",
@@ -32,300 +24,385 @@ _NODE_TAGS = (
 )
 
 
-def _all_nodes(root: etree._Element) -> dict[str, str]:
-    """Retorna mapeamento id → tag de todos os nós do processo."""
-    result: dict[str, str] = {}
+def _all_nodes(root):
+    result = {}
+
     for tag in _NODE_TAGS:
         for el in root.findall(f".//bpmn:{tag}", NS):
             node_id = el.get("id")
+
             if node_id:
                 result[node_id] = tag
+
     return result
 
 
-# ── Regra 1 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# XML WELL FORMED
+# =========================================================
 
-def validate_xml_well_formed(xml_string: str) -> list[str]:
-    """
-    Verifica se a string XML é bem-formada.
+def validate_xml_well_formed(xml_string):
 
-    Args:
-        xml_string: Conteúdo XML como string.
-
-    Returns:
-        Lista vazia se válido; lista com um erro se mal-formado.
-    """
     try:
         etree.fromstring(xml_string.encode("utf-8"))
         return []
+
     except etree.XMLSyntaxError as e:
         return [f"XML mal-formado: {e}"]
 
 
-# ── Regra 2 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# PROCESS EXISTS
+# =========================================================
 
-def validate_process_exists(root: etree._Element) -> list[str]:
-    """
-    Verifica se há exatamente 1 elemento <process> dentro de <definitions>.
+def validate_process_exists(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
-
-    Returns:
-        Lista de erros encontrados.
-    """
     processes = root.findall("bpmn:process", NS)
-    if len(processes) == 0:
-        return ["Nenhum elemento <process> encontrado em <definitions>."]
+
+    if not processes:
+        return ["Nenhum <process> encontrado."]
+
     if len(processes) > 1:
-        return [
-            f"Encontrado(s) {len(processes)} elemento(s) <process>; "
-            "esperado exatamente 1."
-        ]
+        return ["Mais de um <process> encontrado."]
+
     return []
 
 
-# ── Regra 3 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# START EVENT
+# =========================================================
 
-def validate_start_event_exists(root: etree._Element) -> list[str]:
-    """
-    Verifica se há pelo menos 1 <startEvent> no processo.
+def validate_start_event_exists(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
-
-    Returns:
-        Lista de erros encontrados.
-    """
     starts = root.findall(".//bpmn:startEvent", NS)
+
     if not starts:
-        return [
-            "Nenhum <startEvent> encontrado. "
-            "Todo processo BPMN deve ter ao menos um evento de início."
-        ]
+        return ["Nenhum startEvent encontrado."]
+
     return []
 
 
-# ── Regra 4 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# END EVENT
+# =========================================================
 
-def validate_end_event_exists(root: etree._Element) -> list[str]:
-    """
-    Verifica se há pelo menos 1 <endEvent> no processo.
+def validate_end_event_exists(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
-
-    Returns:
-        Lista de erros encontrados.
-    """
     ends = root.findall(".//bpmn:endEvent", NS)
+
     if not ends:
-        return [
-            "Nenhum <endEvent> encontrado. "
-            "Todo processo BPMN deve ter ao menos um evento de fim."
-        ]
+        return ["Nenhum endEvent encontrado."]
+
     return []
 
 
-# ── Regra 5 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# SEQUENCE FLOWS
+# =========================================================
 
-def validate_sequence_flow_exists(root: etree._Element) -> list[str]:
-    """
-    Verifica se há pelo menos 1 <sequenceFlow> no processo.
+def validate_sequence_flow_exists(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
-
-    Returns:
-        Lista de erros encontrados.
-    """
     flows = root.findall(".//bpmn:sequenceFlow", NS)
+
     if not flows:
-        return [
-            "Nenhum <sequenceFlow> encontrado. "
-            "Os elementos do processo não estão conectados."
-        ]
+        return ["Nenhum sequenceFlow encontrado."]
+
     return []
 
 
-# ── Regra 6 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# DUPLICATE IDS
+# =========================================================
 
-def validate_node_connectivity(root: etree._Element) -> list[str]:
-    """
-    Verifica se todo sourceRef/targetRef referencia um id existente no processo.
+def validate_duplicate_ids(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
-
-    Returns:
-        Lista de warnings para referências inválidas.
-    """
-    known_ids = set(_all_nodes(root).keys())
-    warnings: list[str] = []
-
-    for flow in root.findall(".//bpmn:sequenceFlow", NS):
-        flow_id = flow.get("id", "<sem id>")
-        source = flow.get("sourceRef", "")
-        target = flow.get("targetRef", "")
-
-        if source and source not in known_ids:
-            warnings.append(
-                f"sequenceFlow '{flow_id}': sourceRef '{source}' não referencia "
-                "nenhum elemento conhecido no processo."
-            )
-        if target and target not in known_ids:
-            warnings.append(
-                f"sequenceFlow '{flow_id}': targetRef '{target}' não referencia "
-                "nenhum elemento conhecido no processo."
-            )
-
-    return warnings
-
-
-# ── Regra 7 ───────────────────────────────────────────────────────────────────
-
-def validate_duplicate_ids(root: etree._Element) -> list[str]:
-    """
-    Verifica se há IDs duplicados em qualquer elemento do XML.
-
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
-
-    Returns:
-        Lista de erros para cada ID duplicado encontrado.
-    """
     all_ids = [el.get("id") for el in root.iter() if el.get("id")]
+
     counts = Counter(all_ids)
-    errors: list[str] = []
+
+    errors = []
+
     for id_val, count in counts.items():
+
         if count > 1:
             errors.append(
-                f"ID duplicado encontrado: '{id_val}' aparece {count} vezes no XML."
+                f"ID duplicado: '{id_val}' aparece {count} vezes."
             )
+
     return errors
 
 
-# ── Regra 8 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# INVALID REFERENCES
+# =========================================================
 
-def validate_gateway_outgoing(root: etree._Element) -> list[str]:
-    """
-    Verifica se todo <exclusiveGateway> tem pelo menos 2 saídas (sequenceFlows
-    cujo sourceRef aponta para o gateway).
+def validate_node_connectivity(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
+    known_ids = set(_all_nodes(root).keys())
 
-    Returns:
-        Lista de warnings para gateways com menos de 2 saídas.
-    """
+    errors = []
+
+    for flow in root.findall(".//bpmn:sequenceFlow", NS):
+
+        source = flow.get("sourceRef")
+        target = flow.get("targetRef")
+
+        if source not in known_ids:
+            errors.append(
+                f"sourceRef inválido: '{source}'"
+            )
+
+        if target not in known_ids:
+            errors.append(
+                f"targetRef inválido: '{target}'"
+            )
+
+    return errors
+
+
+# =========================================================
+# ORPHAN NODES
+# =========================================================
+
+def validate_orphan_nodes(root):
+
     flows = root.findall(".//bpmn:sequenceFlow", NS)
-    warnings: list[str] = []
 
-    for gw in root.findall(".//bpmn:exclusiveGateway", NS):
-        gw_id = gw.get("id", "<sem id>")
-        gw_name = gw.get("name", gw_id)
-        outgoing = [f for f in flows if f.get("sourceRef") == gw_id]
-        if len(outgoing) < 2:
+    incoming = set()
+    outgoing = set()
+
+    for flow in flows:
+        incoming.add(flow.get("targetRef"))
+        outgoing.add(flow.get("sourceRef"))
+
+    warnings = []
+
+    for node_id, tag in _all_nodes(root).items():
+
+        if tag == "startEvent":
+            continue
+
+        if tag == "endEvent":
+            continue
+
+        if node_id not in incoming and node_id not in outgoing:
             warnings.append(
-                f"exclusiveGateway '{gw_name}' (id='{gw_id}') tem {len(outgoing)} "
-                "saída(s); esperado ≥ 2 para um gateway exclusivo."
+                f"Nó órfão detectado: '{node_id}'"
             )
 
     return warnings
 
 
-# ── Regra 9 ───────────────────────────────────────────────────────────────────
+# =========================================================
+# START EVENT TARGET
+# =========================================================
 
-def validate_start_event_not_target(root: etree._Element) -> list[str]:
-    """
-    Verifica se nenhum <sequenceFlow> tem targetRef apontando para um <startEvent>.
+def validate_start_event_not_target(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
+    start_ids = {
+        el.get("id")
+        for el in root.findall(".//bpmn:startEvent", NS)
+    }
 
-    Returns:
-        Lista de erros encontrados.
-    """
-    start_ids = {el.get("id") for el in root.findall(".//bpmn:startEvent", NS)}
-    errors: list[str] = []
+    errors = []
 
     for flow in root.findall(".//bpmn:sequenceFlow", NS):
-        target = flow.get("targetRef", "")
+
+        target = flow.get("targetRef")
+
         if target in start_ids:
-            flow_id = flow.get("id", "<sem id>")
             errors.append(
-                f"sequenceFlow '{flow_id}' aponta para startEvent '{target}'. "
-                "Eventos de início não podem ser alvo de fluxos."
+                f"Fluxo aponta para startEvent '{target}'"
             )
 
     return errors
 
 
-# ── Regra 10 ──────────────────────────────────────────────────────────────────
+# =========================================================
+# END EVENT SOURCE
+# =========================================================
 
-def validate_end_event_not_source(root: etree._Element) -> list[str]:
-    """
-    Verifica se nenhum <sequenceFlow> tem sourceRef apontando para um <endEvent>.
+def validate_end_event_not_source(root):
 
-    Args:
-        root: Elemento raiz (<definitions>) já parseado.
+    end_ids = {
+        el.get("id")
+        for el in root.findall(".//bpmn:endEvent", NS)
+    }
 
-    Returns:
-        Lista de erros encontrados.
-    """
-    end_ids = {el.get("id") for el in root.findall(".//bpmn:endEvent", NS)}
-    errors: list[str] = []
+    errors = []
 
     for flow in root.findall(".//bpmn:sequenceFlow", NS):
-        source = flow.get("sourceRef", "")
+
+        source = flow.get("sourceRef")
+
         if source in end_ids:
-            flow_id = flow.get("id", "<sem id>")
             errors.append(
-                f"sequenceFlow '{flow_id}' parte de endEvent '{source}'. "
-                "Eventos de fim não podem ser origem de fluxos."
+                f"Fluxo saindo de endEvent '{source}'"
             )
 
     return errors
 
 
-# ── Ponto de entrada principal ────────────────────────────────────────────────
+# =========================================================
+# START EVENTS NEED OUTPUT
+# =========================================================
 
-def validate_all(xml_string: str) -> dict[str, list[str]]:
-    """
-    Aplica todas as 10 regras de validação sobre o XML BPMN fornecido.
+def validate_start_event_outgoing(root):
 
-    Erros (errors) tornam o BPMN inválido e devem ser corrigidos.
-    Avisos (warnings) são informativos e não bloqueiam o uso do BPMN.
+    flows = root.findall(".//bpmn:sequenceFlow", NS)
 
-    Args:
-        xml_string: Conteúdo XML BPMN como string.
+    errors = []
 
-    Returns:
-        Dicionário com chaves "errors" e "warnings", cada uma
-        contendo uma lista de strings descritivas.
-    """
-    errors: list[str] = []
-    warnings: list[str] = []
+    for start in root.findall(".//bpmn:startEvent", NS):
 
-    # Regra 1: XML bem-formado (opera sobre a string, não o elemento)
-    well_formed_errors = validate_xml_well_formed(xml_string)
-    if well_formed_errors:
-        errors.extend(well_formed_errors)
-        # Não há como continuar sem um XML parseável
-        return {"errors": errors, "warnings": warnings}
+        start_id = start.get("id")
+
+        outgoing = [
+            f for f in flows
+            if f.get("sourceRef") == start_id
+        ]
+
+        if not outgoing:
+            errors.append(
+                f"startEvent '{start_id}' não possui saída."
+            )
+
+    return errors
+
+
+# =========================================================
+# END EVENTS NEED INPUT
+# =========================================================
+
+def validate_end_event_incoming(root):
+
+    flows = root.findall(".//bpmn:sequenceFlow", NS)
+
+    errors = []
+
+    for end in root.findall(".//bpmn:endEvent", NS):
+
+        end_id = end.get("id")
+
+        incoming = [
+            f for f in flows
+            if f.get("targetRef") == end_id
+        ]
+
+        if not incoming:
+            errors.append(
+                f"endEvent '{end_id}' não possui entrada."
+            )
+
+    return errors
+
+
+# =========================================================
+# GATEWAY OUTPUTS
+# =========================================================
+
+def validate_gateway_outgoing(root):
+
+    flows = root.findall(".//bpmn:sequenceFlow", NS)
+
+    warnings = []
+
+    for gw in root.findall(".//bpmn:exclusiveGateway", NS):
+
+        gw_id = gw.get("id")
+
+        outgoing = [
+            f for f in flows
+            if f.get("sourceRef") == gw_id
+        ]
+
+        if len(outgoing) < 2:
+            warnings.append(
+                f"Gateway '{gw_id}' possui menos de 2 saídas."
+            )
+
+    return warnings
+
+
+# =========================================================
+# DUPLICATE FLOWS
+# =========================================================
+
+def validate_duplicate_flows(root):
+
+    pairs = []
+
+    errors = []
+
+    for flow in root.findall(".//bpmn:sequenceFlow", NS):
+
+        pair = (
+            flow.get("sourceRef"),
+            flow.get("targetRef"),
+        )
+
+        if pair in pairs:
+            errors.append(
+                f"Fluxo duplicado: {pair}"
+            )
+
+        pairs.append(pair)
+
+    return errors
+
+
+# =========================================================
+# BPMNDI EXISTS
+# =========================================================
+
+def validate_bpmndi_exists(root):
+
+    diagrams = root.findall(".//bpmndi:BPMNDiagram", NS)
+
+    if not diagrams:
+        return [
+            "BPMNDI ausente — diagrama não poderá ser renderizado visualmente."
+        ]
+
+    return []
+
+
+# =========================================================
+# MAIN VALIDATOR
+# =========================================================
+
+def validate_all(xml_string):
+
+    errors = []
+    warnings = []
+
+    wf_errors = validate_xml_well_formed(xml_string)
+
+    if wf_errors:
+        return {
+            "errors": wf_errors,
+            "warnings": [],
+        }
 
     root = etree.fromstring(xml_string.encode("utf-8"))
 
-    # Regras 2–10: operam sobre o elemento raiz
     errors.extend(validate_process_exists(root))
     errors.extend(validate_start_event_exists(root))
     errors.extend(validate_end_event_exists(root))
     errors.extend(validate_sequence_flow_exists(root))
     errors.extend(validate_duplicate_ids(root))
+    errors.extend(validate_node_connectivity(root))
     errors.extend(validate_start_event_not_target(root))
     errors.extend(validate_end_event_not_source(root))
+    errors.extend(validate_start_event_outgoing(root))
+    errors.extend(validate_end_event_incoming(root))
+    errors.extend(validate_duplicate_flows(root))
 
-    warnings.extend(validate_node_connectivity(root))
     warnings.extend(validate_gateway_outgoing(root))
+    warnings.extend(validate_orphan_nodes(root))
+    warnings.extend(validate_bpmndi_exists(root))
 
-    return {"errors": errors, "warnings": warnings}
+    return {
+        "errors": errors,
+        "warnings": warnings,
+    }
