@@ -6,7 +6,9 @@ RETORNE APENAS UM OBJETO JSON VÁLIDO. Sem explicações, sem markdown, sem bloc
 
 ESTRUTURA OBRIGATÓRIA DO JSON (todos os campos são obrigatórios):
 {
-  "activities": ["lista de atividades/tarefas executadas no processo"],
+  "activities": [
+    {"name": "nome da atividade", "actor": "nome do ator que executa a atividade"}
+  ],
   "start_events": ["eventos que disparam o início do processo"],
   "end_events": ["eventos que encerram o processo, um item por desfecho possível"],
   "gateways": [{"type": "exclusive", "condition": "pergunta ou condição de decisão"}],
@@ -16,6 +18,7 @@ ESTRUTURA OBRIGATÓRIA DO JSON (todos os campos são obrigatórios):
 REGRAS DE EXTRAÇÃO:
 1. activities: liste APENAS as ações/tarefas executadas DURANTE o processo, APÓS o disparo inicial.
    - Liste CADA ação separadamente, sem agrupar (ex.: "verificar estoque", "separar pedido", "emitir nota fiscal", "notificar cliente").
+   - Cada atividade deve ser um objeto com "name" (nome da ação) e "actor" (nome do ator que executa, extraído do texto).
    - NÃO INCLUA o evento que inicia o processo (isso é start_event).
    - NÃO INCLUA decisões ou condições (isso é gateway).
    - NÃO INCLUA o encerramento do processo (isso é end_event).
@@ -25,10 +28,12 @@ REGRAS DE EXTRAÇÃO:
    - Esses elementos NÃO devem aparecer em activities.
 4. gateways: cada ponto de decisão vira um gateway. Use type "exclusive". A "condition" deve ser uma pergunta que representa a decisão (ex.: "há estoque disponível?").
 5. actors: pessoas, departamentos, sistemas ou papéis mencionados (ex.: "cliente", "sistema", "gerente", "RH").
+   - Inclua também os atores que aparecem como "actor" nas activities.
 6. NÃO defina ordem ou fluxo — apenas liste os elementos.
 7. NÃO invente elementos ausentes no texto. Se não há gateway, retorne "gateways": [].
 8. Use os nomes exatamente como aparecem no texto, em letras minúsculas.
 9. RELEIA o texto original e CONFIRA se TODAS as ações mencionadas foram listadas em activities.
+10. O campo "actor" de cada atividade deve corresponder a um dos atores listados no campo "actors".
 
 EXEMPLO:
 
@@ -36,7 +41,12 @@ Texto: "Um cliente faz um pedido online. O sistema verifica se há estoque dispo
 
 JSON:
 {
-  "activities": ["verificar estoque disponível", "separar pedido", "emitir nota fiscal", "notificar cliente sobre indisponibilidade"],
+  "activities": [
+    {"name": "verificar estoque disponível", "actor": "sistema"},
+    {"name": "separar pedido", "actor": "sistema"},
+    {"name": "emitir nota fiscal", "actor": "sistema"},
+    {"name": "notificar cliente sobre indisponibilidade", "actor": "sistema"}
+  ],
   "start_events": ["cliente faz um pedido online"],
   "end_events": ["processo encerrado com sucesso", "processo encerrado por indisponibilidade"],
   "gateways": [{"type": "exclusive", "condition": "há estoque disponível?"}],

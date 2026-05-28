@@ -211,6 +211,14 @@ def validate_start_event_not_target(root):
         target = flow.get("targetRef")
 
         if target in start_ids:
+    Returns:
+        Lista de erros para cada ID duplicado encontrado.
+    """
+    all_ids = [el.get("id") for el in root.iter() if el.get("id") and el.tag.split("}")[-1] != "flowNodeRef"]
+    counts = Counter(all_ids)
+    errors: list[str] = []
+    for id_val, count in counts.items():
+        if count > 1:
             errors.append(
                 f"Fluxo aponta para startEvent '{target}'"
             )

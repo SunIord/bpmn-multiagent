@@ -43,7 +43,9 @@ class ProcessModel(BaseModel):
     raw_input: str = ""
 
     # ── Preenchido pelo ExtractionAgent ───────────────────────────────────────
-    activities: list[str] = Field(default_factory=list)
+    activities: list[dict[str, str]] = Field(default_factory=list)
+    # Cada atividade: {"name": "nome da ação", "actor": "ator que executa"}
+    # O campo "actor" pode ser vazio ("") se o ator não for identificado.
     start_events: list[str] = Field(default_factory=list)
     end_events: list[str] = Field(default_factory=list)
     gateways: list[dict[str, str]] = Field(default_factory=list)

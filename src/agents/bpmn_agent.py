@@ -44,9 +44,15 @@ class BPMNAgent(BaseAgent):
 
     def run(self, state: ProcessModel) -> ProcessModel:
 
+        improvePrompt
         # =========================================================
         # ROOT DEFINITIONS
         # =========================================================
+
+        Args:
+            state: ProcessModel com os campos `activities`, `start_events`,
+                `end_events`, `gateways`, `sequences` e `actors` preenchidos.
+         main
 
         root = etree.Element("definitions", nsmap=self.NSMAP)
 
@@ -81,6 +87,8 @@ class BPMNAgent(BaseAgent):
         # START EVENTS
         # =========================================================
 
+        # --- Cria elementos BPMN que não vão nas lanes ---
+        # Eventos de início
         for name in state.start_events:
 
             elem_id = self._make_id(
@@ -140,6 +148,11 @@ class BPMNAgent(BaseAgent):
         # =========================================================
 
         for gw in state.gateways:
+        # Gateways (exclusivos)
+        for gw in state.gateways:
+            gw_name = gw.get("condition", "Decisão")
+            elem_id = self._make_id("exclusiveGateway", counters, id_map, gw_name)
+            etree.SubElement(process, "exclusiveGateway", id=elem_id, name=gw_name)
 
             gw_name = gw.get("condition", "Decision")
 
@@ -199,6 +212,29 @@ class BPMNAgent(BaseAgent):
         # SEQUENCE FLOWS
         # =========================================================
 
+        # --- Cria LaneSet e Lanes ---
+        actors = state.actors if state.actors else ["Processo"]
+        lane_set = etree.SubElement(process, "laneSet")
+
+        # Agrupa atividades por ator
+        actor_tasks: Dict[str, list[dict]] = {actor: [] for actor in actors}
+        for act in state.activities:
+            actor = act.get("actor", "").strip()
+            # Se o ator não estiver na lista, coloca no primeiro ator como fallback
+            if actor not in actor_tasks:
+                actor = actors[0]
+            actor_tasks[actor].append(act)
+
+        for actor_name, tasks in actor_tasks.items():
+            lane_id = f"lane_{actor_name.replace(' ', '_')}"
+            lane = etree.SubElement(lane_set, "lane", id=lane_id, name=actor_name)
+            for task in tasks:
+                task_name = task["name"]
+                task_id = self._make_id("task", counters, id_map, task_name)
+                task_elem = etree.SubElement(lane, "task", id=task_id, name=task_name)
+                etree.SubElement(lane, "flowNodeRef", id=task_id)
+
+        # --- Cria Sequence Flows ---
         flow_counter = 0
 
         for seq in state.sequences:
@@ -229,6 +265,7 @@ class BPMNAgent(BaseAgent):
                 continue
 
             attrs = {
+            flow_attrs: Dict[str, str] = {
                 "id": f"flow_{flow_counter}",
                 "sourceRef": source_id,
                 "targetRef": target_id,
