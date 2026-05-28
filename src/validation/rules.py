@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from collections import Counter, defaultdict
+from collections import Counter
 from lxml import etree
+
+# =========================================================
+# NAMESPACES
+# =========================================================
 
 BPMN_NS = "http://www.omg.org/spec/BPMN/20100524/MODEL"
 
@@ -9,6 +13,10 @@ NS = {
     "bpmn": BPMN_NS,
     "bpmndi": "http://www.omg.org/spec/BPMN/20100524/DI",
 }
+
+# =========================================================
+# TIPOS BPMN SUPORTADOS
+# =========================================================
 
 _NODE_TAGS = (
     "startEvent",
@@ -23,12 +31,22 @@ _NODE_TAGS = (
     "intermediateCatchEvent",
 )
 
+# =========================================================
+# HELPERS
+# =========================================================
 
 def _all_nodes(root):
+    """
+    Retorna dicionário:
+    {
+        node_id: tag
+    }
+    """
     result = {}
 
     for tag in _NODE_TAGS:
         for el in root.findall(f".//bpmn:{tag}", NS):
+
             node_id = el.get("id")
 
             if node_id:
@@ -69,7 +87,7 @@ def validate_process_exists(root):
 
 
 # =========================================================
-# START EVENT
+# START EVENT EXISTS
 # =========================================================
 
 def validate_start_event_exists(root):
@@ -83,7 +101,7 @@ def validate_start_event_exists(root):
 
 
 # =========================================================
-# END EVENT
+# END EVENT EXISTS
 # =========================================================
 
 def validate_end_event_exists(root):
@@ -97,7 +115,7 @@ def validate_end_event_exists(root):
 
 
 # =========================================================
-# SEQUENCE FLOWS
+# SEQUENCE FLOWS EXISTS
 # =========================================================
 
 def validate_sequence_flow_exists(root):
@@ -116,7 +134,22 @@ def validate_sequence_flow_exists(root):
 
 def validate_duplicate_ids(root):
 
-    all_ids = [el.get("id") for el in root.iter() if el.get("id")]
+    all_ids = []
+
+    for el in root.iter():
+
+        el_id = el.get("id")
+
+        if not el_id:
+            continue
+
+        # ignora flowNodeRef
+        tag_name = el.tag.split("}")[-1]
+
+        if tag_name == "flowNodeRef":
+            continue
+
+        all_ids.append(el_id)
 
     counts = Counter(all_ids)
 
@@ -172,6 +205,7 @@ def validate_orphan_nodes(root):
     outgoing = set()
 
     for flow in flows:
+
         incoming.add(flow.get("targetRef"))
         outgoing.add(flow.get("sourceRef"))
 
@@ -179,13 +213,16 @@ def validate_orphan_nodes(root):
 
     for node_id, tag in _all_nodes(root).items():
 
+        # startEvent pode não ter entrada
         if tag == "startEvent":
             continue
 
+        # endEvent pode não ter saída
         if tag == "endEvent":
             continue
 
         if node_id not in incoming and node_id not in outgoing:
+
             warnings.append(
                 f"Nó órfão detectado: '{node_id}'"
             )
@@ -194,7 +231,7 @@ def validate_orphan_nodes(root):
 
 
 # =========================================================
-# START EVENT TARGET
+# START EVENT CANNOT BE TARGET
 # =========================================================
 
 def validate_start_event_not_target(root):
@@ -211,23 +248,18 @@ def validate_start_event_not_target(root):
         target = flow.get("targetRef")
 
         if target in start_ids:
-    Returns:
-        Lista de erros para cada ID duplicado encontrado.
-    """
-    all_ids = [el.get("id") for el in root.iter() if el.get("id") and el.tag.split("}")[-1] != "flowNodeRef"]
-    counts = Counter(all_ids)
-    errors: list[str] = []
-    for id_val, count in counts.items():
-        if count > 1:
+
+            flow_id = flow.get("id", "<sem id>")
+
             errors.append(
-                f"Fluxo aponta para startEvent '{target}'"
+                f"Fluxo '{flow_id}' aponta para startEvent '{target}'."
             )
 
     return errors
 
 
 # =========================================================
-# END EVENT SOURCE
+# END EVENT CANNOT BE SOURCE
 # =========================================================
 
 def validate_end_event_not_source(root):
@@ -244,15 +276,18 @@ def validate_end_event_not_source(root):
         source = flow.get("sourceRef")
 
         if source in end_ids:
+
+            flow_id = flow.get("id", "<sem id>")
+
             errors.append(
-                f"Fluxo saindo de endEvent '{source}'"
+                f"Fluxo '{flow_id}' saindo de endEvent '{source}'."
             )
 
     return errors
 
 
 # =========================================================
-# START EVENTS NEED OUTPUT
+# START EVENT NEEDS OUTGOING
 # =========================================================
 
 def validate_start_event_outgoing(root):
@@ -271,6 +306,7 @@ def validate_start_event_outgoing(root):
         ]
 
         if not outgoing:
+
             errors.append(
                 f"startEvent '{start_id}' não possui saída."
             )
@@ -279,7 +315,7 @@ def validate_start_event_outgoing(root):
 
 
 # =========================================================
-# END EVENTS NEED INPUT
+# END EVENT NEEDS INCOMING
 # =========================================================
 
 def validate_end_event_incoming(root):
@@ -298,6 +334,7 @@ def validate_end_event_incoming(root):
         ]
 
         if not incoming:
+
             errors.append(
                 f"endEvent '{end_id}' não possui entrada."
             )
@@ -325,6 +362,7 @@ def validate_gateway_outgoing(root):
         ]
 
         if len(outgoing) < 2:
+
             warnings.append(
                 f"Gateway '{gw_id}' possui menos de 2 saídas."
             )
@@ -339,7 +377,6 @@ def validate_gateway_outgoing(root):
 def validate_duplicate_flows(root):
 
     pairs = []
-
     errors = []
 
     for flow in root.findall(".//bpmn:sequenceFlow", NS):
@@ -350,6 +387,7 @@ def validate_duplicate_flows(root):
         )
 
         if pair in pairs:
+
             errors.append(
                 f"Fluxo duplicado: {pair}"
             )
@@ -369,7 +407,7 @@ def validate_bpmndi_exists(root):
 
     if not diagrams:
         return [
-            "BPMNDI ausente — diagrama não poderá ser renderizado visualmente."
+            "BPMNDI ausente — o BPMN não poderá ser renderizado visualmente."
         ]
 
     return []
@@ -384,9 +422,11 @@ def validate_all(xml_string):
     errors = []
     warnings = []
 
+    # XML bem formado
     wf_errors = validate_xml_well_formed(xml_string)
 
     if wf_errors:
+
         return {
             "errors": wf_errors,
             "warnings": [],
@@ -394,6 +434,7 @@ def validate_all(xml_string):
 
     root = etree.fromstring(xml_string.encode("utf-8"))
 
+    # ERRORS
     errors.extend(validate_process_exists(root))
     errors.extend(validate_start_event_exists(root))
     errors.extend(validate_end_event_exists(root))
@@ -406,6 +447,7 @@ def validate_all(xml_string):
     errors.extend(validate_end_event_incoming(root))
     errors.extend(validate_duplicate_flows(root))
 
+    # WARNINGS
     warnings.extend(validate_gateway_outgoing(root))
     warnings.extend(validate_orphan_nodes(root))
     warnings.extend(validate_bpmndi_exists(root))

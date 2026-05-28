@@ -4,21 +4,22 @@ BPMNAgent — terceiro agente do pipeline.
 Recebe a estrutura lógica do processo (atividades, eventos, gateways e
 sequências) e gera deterministicamente o XML BPMN 2.0 usando lxml.
 
-Agora o agente também gera:
+Este agente NÃO usa LLM.
+
+Agora também gera:
 - BPMNDI
 - BPMNShape
 - BPMNEdge
 - Bounds
 - Waypoints
 
-permitindo que o BPMN seja desenhado automaticamente em ferramentas
-como Camunda Modeler e BPMN.io.
+Permitindo renderização automática em ferramentas BPMN.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 from lxml import etree
 
@@ -30,7 +31,10 @@ logger = logging.getLogger(__name__)
 
 class BPMNAgent(BaseAgent):
 
-    # Namespaces BPMN 2.0
+    # =========================================================
+    # NAMESPACES BPMN 2.0
+    # =========================================================
+
     NSMAP: Dict[str | None, str] = {
         None: "http://www.omg.org/spec/BPMN/20100524/MODEL",
         "bpmndi": "http://www.omg.org/spec/BPMN/20100524/DI",
@@ -42,19 +46,29 @@ class BPMNAgent(BaseAgent):
     DC_NS = "http://www.omg.org/spec/DD/20100524/DC"
     DI_NS = "http://www.omg.org/spec/DD/20100524/DI"
 
-    def run(self, state: ProcessModel) -> ProcessModel:
+    # =========================================================
+    # MAIN
+    # =========================================================
 
-        improvePrompt
-        # =========================================================
-        # ROOT DEFINITIONS
-        # =========================================================
+    def run(self, state: ProcessModel) -> ProcessModel:
+        """
+        Gera XML BPMN 2.0 + BPMNDI.
 
         Args:
-            state: ProcessModel com os campos `activities`, `start_events`,
-                `end_events`, `gateways`, `sequences` e `actors` preenchidos.
-         main
+            state: ProcessModel preenchido pelos agentes anteriores.
 
-        root = etree.Element("definitions", nsmap=self.NSMAP)
+        Returns:
+            ProcessModel com state.bpmn_xml preenchido.
+        """
+
+        # =========================================================
+        # ROOT
+        # =========================================================
+
+        root = etree.Element(
+            "definitions",
+            nsmap=self.NSMAP,
+        )
 
         process = etree.SubElement(
             root,
@@ -64,7 +78,7 @@ class BPMNAgent(BaseAgent):
         )
 
         # =========================================================
-        # ESTRUTURAS AUXILIARES
+        # AUXILIARES
         # =========================================================
 
         id_map: Dict[str, str] = {}
@@ -76,10 +90,8 @@ class BPMNAgent(BaseAgent):
             "endEvent": 0,
         }
 
-        # Guarda posição visual dos elementos
         positions: Dict[str, Dict[str, Any]] = {}
 
-        # Coordenadas iniciais
         current_x = 100
         current_y = 200
 
@@ -87,8 +99,6 @@ class BPMNAgent(BaseAgent):
         # START EVENTS
         # =========================================================
 
-        # --- Cria elementos BPMN que não vão nas lanes ---
-        # Eventos de início
         for name in state.start_events:
 
             elem_id = self._make_id(
@@ -118,20 +128,28 @@ class BPMNAgent(BaseAgent):
         # TASKS
         # =========================================================
 
-        for name in state.activities:
+        for activity in state.activities:
+
+            # Compatibilidade:
+            # aceita string OU dict
+
+            if isinstance(activity, dict):
+                task_name = activity.get("name", "Task")
+            else:
+                task_name = str(activity)
 
             elem_id = self._make_id(
                 "task",
                 counters,
                 id_map,
-                name,
+                task_name,
             )
 
             etree.SubElement(
                 process,
                 "task",
                 id=elem_id,
-                name=name,
+                name=task_name,
             )
 
             positions[elem_id] = {
@@ -148,13 +166,11 @@ class BPMNAgent(BaseAgent):
         # =========================================================
 
         for gw in state.gateways:
-        # Gateways (exclusivos)
-        for gw in state.gateways:
-            gw_name = gw.get("condition", "Decisão")
-            elem_id = self._make_id("exclusiveGateway", counters, id_map, gw_name)
-            etree.SubElement(process, "exclusiveGateway", id=elem_id, name=gw_name)
 
-            gw_name = gw.get("condition", "Decision")
+            if isinstance(gw, dict):
+                gw_name = gw.get("condition", "Decision")
+            else:
+                gw_name = str(gw)
 
             elem_id = self._make_id(
                 "exclusiveGateway",
@@ -209,32 +225,65 @@ class BPMNAgent(BaseAgent):
             current_x += 150
 
         # =========================================================
+        # LANESET
+        # =========================================================
+
+        actors = set()
+
+        for activity in state.activities:
+
+            if isinstance(activity, dict):
+                actors.add(
+                    activity.get("actor", "Processo")
+                )
+
+        if actors:
+
+            lane_set = etree.SubElement(
+                process,
+                "laneSet",
+                id="LaneSet_1",
+            )
+
+            for actor_name in actors:
+
+                lane_id = (
+                    "Lane_"
+                    + actor_name.replace(" ", "_")
+                )
+
+                lane = etree.SubElement(
+                    lane_set,
+                    "lane",
+                    id=lane_id,
+                    name=actor_name,
+                )
+
+                for activity in state.activities:
+
+                    if not isinstance(activity, dict):
+                        continue
+
+                    if activity.get("actor") != actor_name:
+                        continue
+
+                    task_name = activity.get("name")
+
+                    task_id = id_map.get(task_name)
+
+                    if task_id:
+
+                        flow_node_ref = etree.SubElement(
+                            lane,
+                            "flowNodeRef",
+                        )
+
+                        flow_node_ref.text = task_id
+
+        # =========================================================
         # SEQUENCE FLOWS
         # =========================================================
 
-        # --- Cria LaneSet e Lanes ---
-        actors = state.actors if state.actors else ["Processo"]
-        lane_set = etree.SubElement(process, "laneSet")
-
-        # Agrupa atividades por ator
-        actor_tasks: Dict[str, list[dict]] = {actor: [] for actor in actors}
-        for act in state.activities:
-            actor = act.get("actor", "").strip()
-            # Se o ator não estiver na lista, coloca no primeiro ator como fallback
-            if actor not in actor_tasks:
-                actor = actors[0]
-            actor_tasks[actor].append(act)
-
-        for actor_name, tasks in actor_tasks.items():
-            lane_id = f"lane_{actor_name.replace(' ', '_')}"
-            lane = etree.SubElement(lane_set, "lane", id=lane_id, name=actor_name)
-            for task in tasks:
-                task_name = task["name"]
-                task_id = self._make_id("task", counters, id_map, task_name)
-                task_elem = etree.SubElement(lane, "task", id=task_id, name=task_name)
-                etree.SubElement(lane, "flowNodeRef", id=task_id)
-
-        # --- Cria Sequence Flows ---
         flow_counter = 0
 
         for seq in state.sequences:
@@ -264,7 +313,6 @@ class BPMNAgent(BaseAgent):
                 )
                 continue
 
-            attrs = {
             flow_attrs: Dict[str, str] = {
                 "id": f"flow_{flow_counter}",
                 "sourceRef": source_id,
@@ -272,12 +320,12 @@ class BPMNAgent(BaseAgent):
             }
 
             if condition:
-                attrs["name"] = condition
+                flow_attrs["name"] = condition
 
             etree.SubElement(
                 process,
                 "sequenceFlow",
-                **attrs,
+                **flow_attrs,
             )
 
         # =========================================================
@@ -338,8 +386,11 @@ class BPMNAgent(BaseAgent):
             if source_id is None or target_id is None:
                 continue
 
-            source_pos = positions[source_id]
-            target_pos = positions[target_id]
+            source_pos = positions.get(source_id)
+            target_pos = positions.get(target_id)
+
+            if not source_pos or not target_pos:
+                continue
 
             edge = etree.SubElement(
                 plane,
@@ -348,24 +399,33 @@ class BPMNAgent(BaseAgent):
                 bpmnElement=f"flow_{flow_counter}",
             )
 
-            # ponto de saída
+            # waypoint origem
             etree.SubElement(
                 edge,
                 f"{{{self.DI_NS}}}waypoint",
-                x=str(source_pos["x"] + source_pos["width"]),
-                y=str(source_pos["y"] + source_pos["height"] // 2),
+                x=str(
+                    source_pos["x"]
+                    + source_pos["width"]
+                ),
+                y=str(
+                    source_pos["y"]
+                    + source_pos["height"] // 2
+                ),
             )
 
-            # ponto de entrada
+            # waypoint destino
             etree.SubElement(
                 edge,
                 f"{{{self.DI_NS}}}waypoint",
                 x=str(target_pos["x"]),
-                y=str(target_pos["y"] + target_pos["height"] // 2),
+                y=str(
+                    target_pos["y"]
+                    + target_pos["height"] // 2
+                ),
             )
 
         # =========================================================
-        # SERIALIZAÇÃO FINAL
+        # SERIALIZAÇÃO
         # =========================================================
 
         state.bpmn_xml = (
@@ -378,6 +438,10 @@ class BPMNAgent(BaseAgent):
         )
 
         return state
+
+    # =========================================================
+    # HELPERS
+    # =========================================================
 
     @staticmethod
     def _make_id(
@@ -392,7 +456,9 @@ class BPMNAgent(BaseAgent):
 
         counters[element_type] += 1
 
-        elem_id = f"{element_type}_{counters[element_type]}"
+        elem_id = (
+            f"{element_type}_{counters[element_type]}"
+        )
 
         id_map[name] = elem_id
 
