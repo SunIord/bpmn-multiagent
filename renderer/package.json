@@ -1,0 +1,14 @@
+{
+  "name": "bpmn-renderer",
+  "version": "1.0.0",
+  "description": "Renderizador BPMN para PNG e SVG",
+  "main": "render_bpmn.js",
+  "type": "module",
+  "scripts": {
+    "render": "node render_bpmn.js"
+  },
+  "dependencies": {
+    "bpmn-js": "^17.11.1",
+    "puppeteer": "^24.10.2"
+  }
+}

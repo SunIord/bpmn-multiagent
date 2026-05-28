@@ -19,7 +19,8 @@ from __future__ import annotations
 import uuid
 from pydantic import BaseModel, Field
 from typing import Any
-
+svg_path: str | None = None
+png_path: str | None = None
 
 def _default_validation() -> dict[str, Any]:
     return {"is_valid": False, "errors": [], "warnings": []}

@@ -1,93 +1,278 @@
-# bpmn-multiagent
+# Instalação e Execução
 
-> **Multi-agent pipeline for BPMN generation from natural language using LLMs**  
-> Tópicos Avançados em Engenharia de Software — CIn UFPE
+## Pré-requisitos
+
+Antes de executar o projeto, instale:
+
+* Python 3.11+
+* Node.js 18+
+* npm
+* Ollama
 
 ---
 
-## Sobre o Projeto
+# 1. Clonar o repositório
 
-Este projeto propõe uma evolução sobre a abordagem do artigo *"Do they speak BPMN? Preliminary evaluation of LLMs modeling capabilities based on process model quality measures"*, substituindo a geração monolítica *one-shot* por uma **arquitetura multiagente** que decompõe o problema em etapas especializadas.
-
-### O problema com a abordagem monolítica
-
-Um único LLM executando extração semântica + modelagem lógica + geração BPMN ao mesmo tempo produz:
-- Alta taxa de erros semânticos
-- Inconsistência entre execuções
-- Modelos sem validação formal
-
-### Nossa solução
-
-Um pipeline de 5 agentes especializados orquestrados pelo LangGraph:
-
-```
-Texto → [Extração] → [Modelagem] → [Geração BPMN] → [Validação] → [Refinamento] → XML BPMN
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd bpmn-multiagent
 ```
 
 ---
 
-## Stack
+# 2. Configurar ambiente virtual Python
 
-| Camada | Tecnologia |
-|---|---|
-| Linguagem | Python |
-| Agentes | LangChain |
-| Orquestração | LangGraph |
-| API | FastAPI |
-| Geração XML | lxml |
-| Visualização | bpmn-js |
-| Validação BPMN | Camunda |
-| Persistência | PostgreSQL |
+## Linux/macOS
 
----
-
-## Estrutura do Projeto
-
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 ```
-bpmn-multiagent/
-├── docs/               # Documentação e decisões arquiteturais
-├── data/               # Dados de entrada, saída e ground truth
-├── src/
-│   ├── agents/         # Os 5 agentes especializados
-│   ├── pipeline/       # Orquestrador LangGraph + estado intermediário
-│   ├── baseline/       # Abordagem monolítica (reprodução do artigo)
-│   ├── llm/            # Abstração do provedor LLM
-│   ├── validation/     # Regras de validação BPMN
-│   └── evaluation/     # Métricas de avaliação
-├── prompts/            # Prompts de cada agente
-├── experiments/        # Scripts de experimentos comparativos
-├── notebooks/          # Análise exploratória
-└── tests/              # Testes automatizados
+
+## Windows (PowerShell)
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 ```
 
 ---
 
-## Equipe
+# 3. Instalar dependências Python
 
-| Nome | Papel |
-|---|---|
-| Tiago Henrique | PO & Desenvolvedor |
-| João Victor | Scrum Master & Desenvolvedor |
-| João Pedro | Desenvolvedor |
-| Isaac | Desenvolvedor |
+```bash
+pip install -e ".[dev]"
+```
 
 ---
 
-## Sprints
+# 4. Instalar e configurar o Ollama
 
-| Sprint | Período | Foco |
-|---|---|---|
-| Sprint 0 | 05/05 → 08/05 | Setup, arquitetura, alinhamento |
-| Sprint 1 | 08/05 → 18/05 | MVP: baseline + pipeline multiagente inicial |
-| Sprint 2 | 18/05 → 28/05 | Validação, refinamento iterativo, métricas |
-| Sprint 3 | 28/05 → 04/06 | Experimentos comparativos |
-| Final | 04/06 → 08/06 | Documentação e apresentação |
+## Instalação
+
+### Windows
+
+Baixe:
+
+```text
+https://ollama.com/download/windows
+```
+
+### Linux/macOS
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
 
 ---
 
-## Referências
+# 5. Iniciar o Ollama
 
-- Artigo base: [Do they speak BPMN?](https://github.com/BPM-UOM/llm_based_tools_for_process_modeling)
-- Documentação de arquitetura: [`docs/architecture.txt`](docs/architecture.txt)
-- Análise de gargalos: [`docs/bottleneck-analysis.pdf`](docs/bottleneck-analysis.pdf)
-- Planejamento ágil: [`docs/planning.pdf`](docs/planning.pdf)
+## Linux/macOS
+
+Abra um terminal separado:
+
+```bash
+ollama serve
+```
+
+## Windows
+
+O serviço normalmente inicia automaticamente.
+
+---
+
+# 6. Baixar o modelo Mistral
+
+```bash
+ollama pull mistral
+```
+
+Verificar instalação:
+
+```bash
+ollama list
+```
+
+Saída esperada:
+
+```text
+NAME      ID              SIZE
+mistral   xxxxxxxxxxxx    4.4 GB
+```
+
+---
+
+# 7. Testar o Ollama
+
+```bash
+ollama run mistral "1+1?"
+```
+
+---
+
+# 8. Instalar dependências do renderizador BPMN
+
+O projeto utiliza:
+
+* bpmn-js
+* Puppeteer
+* Chromium Headless
+
+para renderizar automaticamente o BPMN em PNG.
+
+Entre na pasta renderer:
+
+```bash
+cd renderer
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+Isso instalará automaticamente:
+
+* bpmn-js
+* puppeteer
+* chromium headless
+
+---
+
+# 9. Estrutura esperada do renderizador
+
+```text
+renderer/
+├── render_bpmn.js
+├── package.json
+└── node_modules/
+```
+
+---
+
+# 10. Executar o pipeline multiagente
+
+Volte para a raiz do projeto:
+
+```bash
+cd ..
+```
+
+Execute:
+
+```bash
+python experiments/run_multiagent.py
+```
+
+O sistema perguntará:
+
+* qual dataset deseja executar
+* ou qual arquivo específico deseja processar
+
+---
+
+# 11. Fluxo completo do pipeline
+
+```text
+Texto
+ ↓
+ExtractionAgent
+ ↓
+ModelingAgent
+ ↓
+BPMNAgent
+ ↓
+ValidationAgent
+ ↓
+RefinementAgent
+ ↓
+RenderAgent
+ ↓
+XML BPMN + PNG
+```
+
+---
+
+# 12. Saídas geradas
+
+## XML BPMN
+
+```text
+data/outputs/multiagent/
+```
+
+## Renderizações PNG
+
+```text
+data/outputs/render/
+```
+
+---
+
+# 13. Executar baseline monolítico
+
+```bash
+python experiments/run_baseline.py
+```
+
+---
+
+# 14. Executar testes
+
+```bash
+pytest tests/ -v
+```
+
+---
+
+# 15. Tecnologias utilizadas
+
+| Camada                  | Tecnologia |
+| ----------------------- | ---------- |
+| LLM local               | Ollama     |
+| Modelo                  | Mistral    |
+| Pipeline multiagente    | LangGraph  |
+| Agentes                 | LangChain  |
+| XML BPMN                | lxml       |
+| Renderização BPMN       | bpmn-js    |
+| Screenshot automatizado | Puppeteer  |
+| Runtime JS              | Node.js    |
+
+---
+
+# 16. Consumo de memória
+
+O projeto executa:
+
+* Ollama + Mistral (~4 GB RAM)
+* Chromium Headless (~300 MB–1.5 GB)
+
+Recomendado:
+
+* mínimo: 8 GB RAM
+* ideal: 16 GB RAM
+
+---
+
+# 17. Solução de problemas
+
+| Problema                       | Solução                                          |
+| ------------------------------ | ------------------------------------------------ |
+| `ollama: command not found`    | Reinstale o Ollama                               |
+| `connection refused`           | Execute `ollama serve`                           |
+| `model not found`              | Execute `ollama pull mistral`                    |
+| `npm: command not found`       | Instale Node.js                                  |
+| `Cannot find module 'bpmn-js'` | Execute `npm install` dentro de `renderer/`      |
+| `Failed to launch browser`     | Reinstale o Puppeteer: `npm install puppeteer`   |
+| PNG não gerado                 | Verifique se o RenderAgent executou corretamente |
+
+---
+
+# 18. Observações
+
+* O projeto roda completamente localmente.
+* Nenhuma API paga é utilizada.
+* O BPMN é renderizado automaticamente em PNG.
+* O pipeline é determinístico após a etapa de modelagem.

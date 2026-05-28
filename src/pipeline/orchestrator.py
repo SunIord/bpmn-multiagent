@@ -1,35 +1,34 @@
 """
-Orquestrador do pipeline multiagente com LangGraph.
+Orquestrador do pipeline multiagente.
 
-Controla a execução dos agentes usando um grafo de estados.
-Fluxo (Sprint 2):
-    extract → model → generate → validate ─── válido ──────────► END
-                                       │
-                                    inválido + iteration < 3
-                                       │
-                                     refine
-                                       │
-                                       └──► validate (loop)
-                                       │
-                                    inválido + iteration >= 3
-                                       │
-                                       └──► END (com erros)
+Fluxo:
 
-O RefinementAgent corrige o XML diretamente, sem reexecutar o BPMNAgent.
+extract
+   ↓
+model
+   ↓
+generate BPMN
+   ↓
+validate
+   ↓
+refine (loop se inválido)
+   ↓
+render
+   ↓
+END
 """
 
 from __future__ import annotations
 
 import logging
-from typing import TypedDict, Any
-
-from langgraph.graph import END, StateGraph
 
 from src.agents.bpmn_agent import BPMNAgent
 from src.agents.extraction_agent import ExtractionAgent
 from src.agents.modeling_agent import ModelingAgent
 from src.agents.refinement_agent import RefinementAgent
 from src.agents.validation_agent import ValidationAgent
+from src.agents.render_agent import RenderAgent
+
 from src.pipeline.state import ProcessModel
 
 logger = logging.getLogger(__name__)
@@ -37,74 +36,176 @@ logger = logging.getLogger(__name__)
 MAX_ITERATIONS = 3
 
 
-def _should_refine(state: ProcessModel) -> str:
-    """Decide o próximo passo após a validação."""
-    is_valid = state.validation.get("is_valid", False)
-    iteration = state.iteration
+def run_pipeline(
+    text: str,
+    input_type: str = "freetext",
+) -> ProcessModel:
+    """
+    Executa o pipeline multiagente completo.
 
-    if is_valid or iteration >= MAX_ITERATIONS:
-        logger.info(
-            "Pipeline: ciclo de refinamento encerrado (válido=%s, iteração=%d).",
-            is_valid,
-            iteration,
-        )
-        return "end"
+    Args:
+        text:
+            Texto do processo.
 
-    logger.info(
-        "Pipeline: BPMN inválido — encaminhando para RefinementAgent (iteração %d).",
-        iteration,
+        input_type:
+            Tipo de entrada:
+            - freetext
+            - noisy
+            - structured
+
+    Returns:
+        ProcessModel final.
+    """
+
+    state = ProcessModel(
+        raw_input=text,
+        input_type=input_type,
     )
-    return "refine"
 
-
-def run_pipeline(text: str, input_type: str = "freetext") -> ProcessModel:
-    """
-    Executa o pipeline multiagente completo sobre um texto de processo.
-    """
-    state = ProcessModel(raw_input=text, input_type=input_type)
+    # =========================================================
+    # AGENTES
+    # =========================================================
 
     extraction = ExtractionAgent()
+
     modeling = ModelingAgent()
+
     bpmn_gen = BPMNAgent()
+
     validation = ValidationAgent()
+
     refinement = RefinementAgent()
 
+    render = RenderAgent()
+
     try:
-        # Etapas obrigatórias (executam uma única vez)
-        logger.info("Pipeline: iniciando ExtractionAgent.")
+
+        # =========================================================
+        # EXTRACTION
+        # =========================================================
+
+        logger.info(
+            "Pipeline: iniciando ExtractionAgent."
+        )
+
         state = extraction.run(state)
 
-        logger.info("Pipeline: iniciando ModelingAgent.")
+        # =========================================================
+        # MODELING
+        # =========================================================
+
+        logger.info(
+            "Pipeline: iniciando ModelingAgent."
+        )
+
         state = modeling.run(state)
 
-        logger.info("Pipeline: iniciando BPMNAgent.")
+        # =========================================================
+        # BPMN GENERATION
+        # =========================================================
+
+        logger.info(
+            "Pipeline: iniciando BPMNAgent."
+        )
+
         state = bpmn_gen.run(state)
 
-        # Ciclo de validação e refinamento
-        logger.info("Pipeline: iniciando ValidationAgent.")
+        # =========================================================
+        # VALIDATION
+        # =========================================================
+
+        logger.info(
+            "Pipeline: iniciando ValidationAgent."
+        )
+
         state = validation.run(state)
 
-        while not state.validation.get("is_valid") and state.iteration < MAX_ITERATIONS:
+        # =========================================================
+        # REFINEMENT LOOP
+        # =========================================================
+
+        while (
+            not state.validation.get("is_valid")
+            and state.iteration < MAX_ITERATIONS
+        ):
+
             logger.warning(
-                "Pipeline: BPMN inválido — encaminhando para RefinementAgent (iteração %d).",
+                (
+                    "Pipeline: BPMN inválido — "
+                    "encaminhando para RefinementAgent "
+                    "(iteração %d)."
+                ),
                 state.iteration,
             )
+
             state = refinement.run(state)
-            logger.info("Pipeline: reavaliando com ValidationAgent.")
+
+            logger.info(
+                "Pipeline: reavaliando BPMN."
+            )
+
             state = validation.run(state)
 
+        # =========================================================
+        # RESULTADO FINAL DA VALIDAÇÃO
+        # =========================================================
+
         if state.validation.get("is_valid"):
-            logger.info("Pipeline: concluído com BPMN válido.")
+
+            logger.info(
+                "Pipeline: BPMN válido."
+            )
+
+            # =====================================================
+            # RENDER
+            # =====================================================
+
+            logger.info(
+                "Pipeline: iniciando RenderAgent."
+            )
+
+            state = render.run(state)
+
+            logger.info(
+                (
+                    "Pipeline: renderização concluída "
+                    "(PNG + SVG gerados)."
+                )
+            )
+
         else:
+
             logger.warning(
-                "Pipeline: concluído com BPMN inválido após %d tentativas — %d erro(s).",
+                (
+                    "Pipeline: concluído com BPMN inválido "
+                    "após %d tentativa(s)."
+                ),
                 state.iteration,
+            )
+
+            logger.warning(
+                "Total de erros: %d",
                 len(state.validation.get("errors", [])),
             )
 
+            for err in state.validation.get("errors", []):
+
+                logger.warning(
+                    "Erro de validação: %s",
+                    err,
+                )
+
     except Exception as exc:
+
+        logger.exception(
+            "Pipeline: erro inesperado."
+        )
+
         raise RuntimeError(
-            f"Erro durante a execução do pipeline multiagente: {exc}"
+            (
+                "Erro durante execução do pipeline "
+                f"multiagente: {exc}"
+            )
         ) from exc
 
     return state
