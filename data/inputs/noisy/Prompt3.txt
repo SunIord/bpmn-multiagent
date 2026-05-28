@@ -1,0 +1,41 @@
+Create a BPMN model for the following description. Note that the text has additional
+information that is not part of the process flow. Identify only the relevant process flow:
+The validity of the categories of Greek driving licenses is determined by the provisions of
+article 5 of P.D. 51/2012 (A΄ 101), as in force. Each category of driving license may be renewed
+at any time, provided that the legal requirements are met. The applicant should hold a valid
+Greek or EU-Member driving license, and have his/her habitual residence in Greece or to have
+had the status of student or pupil for at least six (6) months in Greece, before the day of
+submission of the application and supporting documents. The procedure can be initiated by the
+applicant either at a regional point of service (Directorate for Transport and Communications)
+or digitally in the National Single Digital Gateway - gov.gr. The estimated time is 45 days and
+the fees vary from 108 to 111 €. The official of the Transport and Communications Service of
+the Regional Unit receives the application - solemn declaration and the supporting documents
+submitted by the interested party directly at the Service or digitally via the following link:
+[Link]. The official of the Transport and Communications Service of the relevant Regional Unit
+checks the completeness and correctness of the supporting documents. If omissions are
+identified, the interested party will be informed of the need to provide additional information.
+The process then waits for one of two events to occur: either the interested party submits the
+requested documents, or 15 days pass without submission. If the documents are submitted
+within the deadline, the completeness and correctness check is performed again. If no
+documents are received after 15 days, the process is terminated. If no omissions are identified,
+the official of the Transport and Communications Service of the relevant Regional Unit shall
+register the application. The official of the Transport and Communications Service of the
+relevant Regional Unit gives the person concerned a Certificate of Submission of Request. If
+the driving license has expired or expires before the printing of the new form, the official issues
+the person concerned with a provisional driving license. Similarly, in the digital procedure, a
+citizen can collect a provisional driving license in person from the Regional Unit that has
+submitted the application and supporting documents electronically. The official of the
+Transport and Communications Service of the relevant Regional Unit issues the driving license
+by making an electronic entry in the Driving License Register. As long as the license has not
+been issued, an automated reminder is sent to the responsible official every 5 working days.
+The processing time depends on the workload of the respective Transport and Communications
+Service of the Regional Unit. The Transport and Communications Service of the Regional Unit
+sends the information in electronic form, as well as the print application, with the photograph
+and signature of the person concerned, to the Passport Directorate of the Hellenic Police. The
+person concerned receives the driving license in person, from the Transport and
+Communications Service where the relevant application has been submitted. The driving
+license shall be delivered, with signature, to the holder, who must be in possession of his/her
+identity card or valid passport, and to a person in possession of any legal document such as a
+power of attorney duly certified as authentic or a po wer of attorney. He/she shall also
+surrender the driver’s license if it contains at least one (1) valid category (such as a renewal
+of category C or D while B is still valid) and the color temporary driver’s license .
