@@ -1,0 +1,7 @@
+{
+  "is_valid": false,
+  "errors": [
+    "XML mal-formado: Opening and ending tag mismatch: exclusiveGateway line 9 and exclusiveGateways, line 12, column 25 (<string>, line 12)"
+  ],
+  "warnings": []
+}

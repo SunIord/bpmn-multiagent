@@ -1,0 +1,13 @@
+{
+  "is_valid": false,
+  "errors": [
+    "sourceRef inválido: 'None'",
+    "targetRef inválido: 'None'",
+    "targetRef inválido: 'None'",
+    "endEvent 'endEvent_1' não possui entrada.",
+    "endEvent 'endEvent_2' não possui entrada."
+  ],
+  "warnings": [
+    "Gateway 'exclusiveGateway_1' possui menos de 2 saídas."
+  ]
+}

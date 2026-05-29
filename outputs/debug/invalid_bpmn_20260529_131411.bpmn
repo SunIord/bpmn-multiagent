@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI">
+  <process id="Process_1" isExecutable="false">
+    <startEvent id="startEvent_1" name="o oficial do Serviço de Transportes e Comunicações da Unidade Regional recebe aplicação - declaração solemne e documentos de apoio"/>
+    <exclusiveGateway id="exclusiveGateway_1" name="há omissões?"/>
+    <endEvent id="endEvent_1" name="processo encerrado"/>
+    <endEvent id="endEvent_2" name="licença emitida"/>
+    <sequenceFlow id="flow_1" sourceRef="startEvent_1" targetRef="exclusiveGateway_1"/>
+    <sequenceFlow id="flow_2" sourceRef="endEvent_2" targetRef="endEvent_1"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="startEvent_1_di" bpmnElement="startEvent_1">
+        <dc:Bounds x="100" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="exclusiveGateway_1_di" bpmnElement="exclusiveGateway_1">
+        <dc:Bounds x="250" y="215" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEvent_1_di" bpmnElement="endEvent_1">
+        <dc:Bounds x="400" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEvent_2_di" bpmnElement="endEvent_2">
+        <dc:Bounds x="550" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="flow_1_di" bpmnElement="flow_1">
+        <di:waypoint x="136" y="218"/>
+        <di:waypoint x="250" y="240"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_2_di" bpmnElement="flow_2">
+        <di:waypoint x="586" y="218"/>
+        <di:waypoint x="400" y="218"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

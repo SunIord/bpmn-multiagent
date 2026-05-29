@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "bpmn-js": "^17.11.1",
-    "puppeteer": "^24.10.2"
+    "puppeteer": "^22.15.0"
   }
 }

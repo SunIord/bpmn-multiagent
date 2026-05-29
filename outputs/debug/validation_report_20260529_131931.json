@@ -1,0 +1,10 @@
+{
+  "is_valid": false,
+  "errors": [
+    "targetRef inválido: 'endEvent_1'",
+    "Fluxo 'flow_3' saindo de endEvent 'endEvent_2'."
+  ],
+  "warnings": [
+    "Gateway 'exclusiveGateway_1' possui menos de 2 saídas."
+  ]
+}

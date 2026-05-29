@@ -1,0 +1,10 @@
+{
+  "is_valid": false,
+  "errors": [
+    "targetRef inválido: 'None'",
+    "targetRef inválido: 'None'",
+    "endEvent 'endEvent_2' não possui entrada.",
+    "Fluxo duplicado: ('exclusiveGateway_1', None)"
+  ],
+  "warnings": []
+}

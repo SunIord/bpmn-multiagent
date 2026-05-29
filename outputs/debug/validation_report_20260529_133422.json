@@ -1,0 +1,10 @@
+{
+  "is_valid": false,
+  "errors": [
+    "sourceRef inválido: 'None'"
+  ],
+  "warnings": [
+    "Gateway 'exclusiveGateway_1' possui menos de 2 saídas.",
+    "Gateway 'exclusiveGateway_2' possui menos de 2 saídas."
+  ]
+}

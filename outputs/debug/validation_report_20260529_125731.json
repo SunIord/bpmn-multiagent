@@ -1,0 +1,14 @@
+{
+  "is_valid": false,
+  "errors": [
+    "ID duplicado: 'flow_3' aparece 2 vezes.",
+    "sourceRef inválido: 'None'",
+    "targetRef inválido: 'None'",
+    "sourceRef inválido: 'None'",
+    "targetRef inválido: 'None'",
+    "Fluxo duplicado: (None, None)"
+  ],
+  "warnings": [
+    "Gateway 'exclusiveGateway_2' possui menos de 2 saídas."
+  ]
+}

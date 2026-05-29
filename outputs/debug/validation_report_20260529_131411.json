@@ -1,0 +1,10 @@
+{
+  "is_valid": false,
+  "errors": [
+    "Fluxo 'flow_2' saindo de endEvent 'endEvent_2'.",
+    "endEvent 'endEvent_2' não possui entrada."
+  ],
+  "warnings": [
+    "Gateway 'exclusiveGateway_1' possui menos de 2 saídas."
+  ]
+}

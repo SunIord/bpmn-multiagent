@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI">
+  <process id="Process_1" isExecutable="false">
+    <startEvent id="startEvent_1" name="o interessado envia aplicação - declaração solemne e documentos suportivos (digitalmente ou diretamente ao Serviço)"/>
+    <exclusiveGateway id="exclusiveGateway_1" name="há omissões nos documentos suportivos?"/>
+    <exclusiveGateway id="exclusiveGateway_2" name="foram recebidos os documentos dentro do prazo de 15 dias?"/>
+    <endEvent id="endEvent_1" name="processo encerrado devido à falta de documentos após 15 dias"/>
+    <endEvent id="endEvent_2" name="processo encerrado"/>
+    <sequenceFlow id="flow_1" sourceRef="startEvent_1" targetRef="exclusiveGateway_1"/>
+    <sequenceFlow id="flow_2" sourceRef="exclusiveGateway_1" targetRef="exclusiveGateway_2"/>
+    <sequenceFlow id="flow_3" sourceRef="exclusiveGateway_2" targetRef="exclusiveGateway_1" name="não"/>
+    <sequenceFlow id="flow_4" sourceRef="exclusiveGateway_2" targetRef="endEvent_2"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="startEvent_1_di" bpmnElement="startEvent_1">
+        <dc:Bounds x="100" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="exclusiveGateway_1_di" bpmnElement="exclusiveGateway_1">
+        <dc:Bounds x="250" y="215" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="exclusiveGateway_2_di" bpmnElement="exclusiveGateway_2">
+        <dc:Bounds x="400" y="215" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEvent_1_di" bpmnElement="endEvent_1">
+        <dc:Bounds x="550" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEvent_2_di" bpmnElement="endEvent_2">
+        <dc:Bounds x="700" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="flow_1_di" bpmnElement="flow_1">
+        <di:waypoint x="136" y="218"/>
+        <di:waypoint x="250" y="240"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_2_di" bpmnElement="flow_2">
+        <di:waypoint x="300" y="240"/>
+        <di:waypoint x="400" y="240"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_3_di" bpmnElement="flow_3">
+        <di:waypoint x="450" y="240"/>
+        <di:waypoint x="250" y="240"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="flow_4_di" bpmnElement="flow_4">
+        <di:waypoint x="450" y="240"/>
+        <di:waypoint x="700" y="218"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
