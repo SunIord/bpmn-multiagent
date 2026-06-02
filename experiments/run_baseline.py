@@ -1,8 +1,8 @@
 """
 Experimento — Baseline Monolítico (one-shot).
 
-Processa todos os arquivos .txt em data/inputs/freetext/ usando o pipeline
-monolítico e salva os XMLs gerados em data/outputs/baseline/.
+Processa todos os arquivos .txt em data/inputs/ (freetext, structured, noisy)
+usando o pipeline monolítico e salva os XMLs gerados em data/outputs/baseline/.
 
 Execução:
     python experiments/run_baseline.py
@@ -21,7 +21,11 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.baseline.monolithic import run_monolithic  # noqa: E402
 
 # Caminhos
-INPUT_DIR = PROJECT_ROOT / "data" / "inputs" / "freetext"
+INPUT_DIRS = [
+    PROJECT_ROOT / "data" / "inputs" / "freetext",
+    PROJECT_ROOT / "data" / "inputs" / "structured",
+    PROJECT_ROOT / "data" / "inputs" / "noisy",
+]
 OUTPUT_DIR = PROJECT_ROOT / "data" / "outputs" / "baseline"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -31,22 +35,25 @@ def main() -> None:
     print("  EXPERIMENTO — Baseline Monolítico (one-shot)")
     print("=" * 60)
 
-    if not INPUT_DIR.exists():
-        print(f"\n[ERRO] Diretório de entrada não encontrado: {INPUT_DIR}")
-        sys.exit(1)
+    txt_files = []
+    for input_dir in INPUT_DIRS:
+        if input_dir.exists():
+            txt_files.extend(sorted(input_dir.glob("*.txt")))
 
-    txt_files = sorted(INPUT_DIR.glob("*.txt"))
     if not txt_files:
-        print(f"\n[ERRO] Nenhum arquivo .txt encontrado em: {INPUT_DIR}")
+        print("\n[ERRO] Nenhum arquivo .txt encontrado nos diretórios de entrada.")
         sys.exit(1)
 
-    print(f"\n{len(txt_files)} arquivo(s) encontrado(s) em {INPUT_DIR.name}\n")
+    print(f"\n{len(txt_files)} arquivo(s) encontrado(s)\n")
 
     sucessos = 0
     erros = 0
 
     for txt_file in txt_files:
-        output_path = OUTPUT_DIR / f"{txt_file.stem}_baseline.xml"
+        folder_name = txt_file.parent.name
+        output_name = f"{txt_file.stem}_{folder_name}_baseline.xml"
+        output_path = OUTPUT_DIR / output_name
+
         print(f"[{sucessos + erros + 1}/{len(txt_files)}] {txt_file.name}...", end=" ")
 
         try:

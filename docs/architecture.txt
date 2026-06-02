@@ -13,6 +13,7 @@ bpmn-multiagent/
 │   ├── setup_ollama.md
 │   ├── bottleneck-analysis.pdf
 │   ├── planning.pdf
+│   ├── usage_guide.md
 │   └── decisions/
 │       ├── ADR-001-multiagent.md
 │       ├── ADR-002-langgraph.md
@@ -22,12 +23,18 @@ bpmn-multiagent/
 ├── data/
 │   ├── inputs/
 │   │   ├── structured/             # Entradas estruturadas (ex: JSON, tabelas)
+│   |   |   └── Prompt1.txt
 │   │   ├── freetext/               # Entradas em texto livre
+│   |   |   └── Prompt4.txt
 │   │   └── noisy/                  # Entradas com ruído (Sprint 3)
+│   |   |   └── Prompt3.txt
 │   ├── outputs/
 │   │   ├── baseline/               # Saídas do monolito
 │   │   └── multiagent/             # Saídas do pipeline multiagente
 │   └── ground_truth/               # Modelos BPMN de referência para avaliação
+│       ├── processo1_pedido.bpmn
+│       ├── processo2_reembolso.bpmn
+│       └── processo3_clinica.bpmn
 │
 ├── src/
 │   ├── __init__.py
@@ -66,8 +73,6 @@ bpmn-multiagent/
 │   ├── extraction.txt
 │   ├── modeling.txt
 │   ├── monolithic.txt  
-│   ├── bpmn_generation.txt
-│   ├── validation.txt
 │   └── refinement.txt
 │
 ├── experiments/                    # Scripts de experimento e análise (Sprint 3)

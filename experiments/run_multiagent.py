@@ -3,7 +3,7 @@ Experimento — Pipeline Multiagente.
 
 Executa o pipeline multiagente sobre arquivos de entrada BPMN.
 
-Agora suporta:
+Suporta:
 - freetext
 - structured
 - noisy

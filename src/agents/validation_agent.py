@@ -35,6 +35,8 @@ from src.validation.rules import validate_all
 
 logger = logging.getLogger(__name__)
 
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
 
 class ValidationAgent(BaseAgent):
     """
@@ -47,7 +49,7 @@ class ValidationAgent(BaseAgent):
     Qualquer erro interno é convertido em validation.errors.
     """
 
-    DEBUG_DIR = Path("outputs/debug")
+    DEBUG_DIR = _PROJECT_ROOT / "data" / "outputs" / "debug"
 
     def run(self, state: ProcessModel) -> ProcessModel:
         """

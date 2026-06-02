@@ -1,4 +1,4 @@
-reate a BPMN model for the following description:
+Create a BPMN model for the following description:
 1. The interested party submits the application, solemn declaration, and supporting
 documents to the Transport and Communications Service (TCS), either in person or
 digitally via a specified link.

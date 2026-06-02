@@ -1,29 +1,31 @@
 """
-Orquestrador do pipeline multiagente com LangGraph.
+Orquestrador do pipeline multiagente.
 
-Controla a execução dos agentes usando um grafo de estados.
-Fluxo (Sprint 2):
+Controla a execução dos agentes com ciclo de refinamento.
+Fluxo (Sprint 3):
     extract → model → generate → validate ─── válido ──────────► END
                                        │
                                     inválido + iteration < 3
                                        │
-                                     refine
+                                     refine (re-extrai + re-modela)
                                        │
-                                       └──► validate (loop)
+                                     bpmn_xml = "" → generate (BPMNAgent determinístico)
+                                       │
+                                     validate (loop)
                                        │
                                     inválido + iteration >= 3
                                        │
                                        └──► END (com erros)
 
-O RefinementAgent corrige o XML diretamente, sem reexecutar o BPMNAgent.
+O RefinementAgent (v2) não edita mais o XML diretamente. Em vez disso:
+- Re-extrai elementos e re-modela sequências via LLM
+- Limpa state.bpmn_xml para sinalizar que precisa regenerar
+- O BPMNAgent (determinístico, lxml) gera o XML limpo
 """
 
 from __future__ import annotations
 
 import logging
-from typing import TypedDict, Any
-
-from langgraph.graph import END, StateGraph
 
 from src.agents.bpmn_agent import BPMNAgent
 from src.agents.extraction_agent import ExtractionAgent
@@ -37,29 +39,21 @@ logger = logging.getLogger(__name__)
 MAX_ITERATIONS = 3
 
 
-def _should_refine(state: ProcessModel) -> str:
-    """Decide o próximo passo após a validação."""
-    is_valid = state.validation.get("is_valid", False)
-    iteration = state.iteration
-
-    if is_valid or iteration >= MAX_ITERATIONS:
-        logger.info(
-            "Pipeline: ciclo de refinamento encerrado (válido=%s, iteração=%d).",
-            is_valid,
-            iteration,
-        )
-        return "end"
-
-    logger.info(
-        "Pipeline: BPMN inválido — encaminhando para RefinementAgent (iteração %d).",
-        iteration,
-    )
-    return "refine"
-
-
 def run_pipeline(text: str, input_type: str = "freetext") -> ProcessModel:
     """
     Executa o pipeline multiagente completo sobre um texto de processo.
+
+    Args:
+        text:       Descrição do processo em linguagem natural.
+        input_type: Tipo de entrada — "freetext", "structured" ou "noisy".
+
+    Returns:
+        ProcessModel com todos os campos preenchidos, incluindo
+        `bpmn_xml` e `validation`. Se a validação falhar após 3 tentativas
+        de refinamento, o estado é retornado com `validation.is_valid == False`.
+
+    Raises:
+        RuntimeError: Se qualquer agente lançar uma exceção não tratada.
     """
     state = ProcessModel(raw_input=text, input_type=input_type)
 
@@ -90,6 +84,16 @@ def run_pipeline(text: str, input_type: str = "freetext") -> ProcessModel:
                 state.iteration,
             )
             state = refinement.run(state)
+
+            # Se o RefinementAgent limpou o XML, regenera com BPMNAgent (determinístico)
+            if not state.bpmn_xml:
+                logger.info("Pipeline: RefinementAgent invalidou o XML. Regenerando com BPMNAgent.")
+                state = bpmn_gen.run(state)
+            else:
+                logger.warning(
+                    "Pipeline: RefinementAgent não limpou bpmn_xml. Pulando regeneração."
+                )
+
             logger.info("Pipeline: reavaliando com ValidationAgent.")
             state = validation.run(state)
 
