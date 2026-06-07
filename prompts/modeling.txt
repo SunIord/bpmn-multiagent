@@ -23,10 +23,11 @@ REGRAS OBRIGATÓRIAS:
    CERTO: usar os nomes exatamente como fornecidos, um por vez
 2. Cada start_event deve aparecer como "source" em pelo menos um fluxo (nunca como "target").
 3. Cada end_event deve aparecer como "target" em pelo menos um fluxo (nunca como "source").
-4. Cada gateway exclusivo deve ter NO MÍNIMO 2 fluxos de saída, cada um com "condition" preenchida.
+4. Cada gateway exclusivo deve ter EXATAMENTE 2 fluxos de saída, cada um com "condition" preenchida ('sim', 'não', 'aprovado', 'reprovado', etc.). Gateways não podem ter menos nem mais de 2 saídas.
 5. Cada elemento (atividade, gateway) deve aparecer como "target" de pelo menos um fluxo (estar conectado ao grafo).
 6. Siga a lógica descrita no texto original — não invente caminhos não mencionados.
 7. Se um gateway tem múltiplas saídas, todos os caminhos devem eventualmente chegar a um end_event.
+8. Toda atividade (task) deve aparecer como "target" de pelo menos 1 fluxo E como "source" de pelo menos 1 fluxo. Atividades não podem estar desconectadas.
 
 EXEMPLO:
 

@@ -228,16 +228,7 @@ class BPMNAgent(BaseAgent):
         # LANESET
         # =========================================================
 
-        actors = set()
-
-        for activity in state.activities:
-
-            if isinstance(activity, dict):
-                actors.add(
-                    activity.get("actor", "Processo")
-                )
-
-        if actors:
+        if state.actors:
 
             lane_set = etree.SubElement(
                 process,
@@ -245,40 +236,36 @@ class BPMNAgent(BaseAgent):
                 id="LaneSet_1",
             )
 
-            for actor_name in actors:
+            # Mapeia ator → lista de task_ids
+            actor_task_ids: Dict[str, list[str]] = {actor: [] for actor in state.actors}
 
-                lane_id = (
-                    "Lane_"
-                    + actor_name.replace(" ", "_")
-                )
+            for activity in state.activities:
+                task_name = activity if isinstance(activity, str) else activity.get("name", "")
+                task_id = id_map.get(task_name)
+                if not task_id:
+                    continue
 
+                # Se a atividade tem ator, associa a ele; senão, vai para o primeiro ator
+                actor = ""
+                if isinstance(activity, dict):
+                    actor = activity.get("actor", "")
+                if not actor or actor not in actor_task_ids:
+                    actor = state.actors[0] if state.actors else "Processo"
+                    if actor not in actor_task_ids:
+                        actor_task_ids[actor] = []
+                actor_task_ids[actor].append(task_id)
+
+            for actor_name, task_ids in actor_task_ids.items():
+                lane_id = "Lane_" + actor_name.replace(" ", "_")
                 lane = etree.SubElement(
                     lane_set,
                     "lane",
                     id=lane_id,
                     name=actor_name,
                 )
-
-                for activity in state.activities:
-
-                    if not isinstance(activity, dict):
-                        continue
-
-                    if activity.get("actor") != actor_name:
-                        continue
-
-                    task_name = activity.get("name")
-
-                    task_id = id_map.get(task_name)
-
-                    if task_id:
-
-                        flow_node_ref = etree.SubElement(
-                            lane,
-                            "flowNodeRef",
-                        )
-
-                        flow_node_ref.text = task_id
+                for tid in task_ids:
+                    fnr = etree.SubElement(lane, "flowNodeRef")
+                    fnr.text = tid
 
         # =========================================================
         # SEQUENCE FLOWS

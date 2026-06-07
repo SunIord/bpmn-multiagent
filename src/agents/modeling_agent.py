@@ -67,6 +67,15 @@ def _fuzzy_match(name: str, candidates: list[str], cutoff: float = 0.6) -> str |
     return matches[0] if matches else None
 
 
+def _get_activity_name(activity) -> str:
+    """Extrai o nome da atividade, compatível com string ou dict."""
+    if isinstance(activity, str):
+        return activity
+    elif isinstance(activity, dict):
+        return str(activity.get("name", ""))
+    return ""
+
+
 class ModelingAgent(BaseAgent):
     """
     Agente de modelagem de fluxo de processo.
@@ -92,16 +101,19 @@ class ModelingAgent(BaseAgent):
         """
         template = self._load_prompt("modeling.txt")
 
+        # Extrai apenas os nomes das atividades (ignora actor)
+        activity_names = [_get_activity_name(a) for a in state.activities]
+
         prompt = (
             template
             .replace("{TEXTO_ORIGINAL}", state.raw_input.strip())
             .replace("{START_EVENTS}", _format_list(state.start_events))
-            .replace("{ACTIVITIES}", _format_list(state.activities))
+            .replace("{ACTIVITIES}", _format_list(activity_names))
             .replace("{GATEWAYS}", _format_gateways(state.gateways))
             .replace("{END_EVENTS}", _format_list(state.end_events))
         )
 
-        raw_response = generate(prompt)
+        raw_response = generate(prompt, model="mistral")
         json_str = _extract_json(raw_response)
 
         try:
@@ -117,7 +129,7 @@ class ModelingAgent(BaseAgent):
         raw_sequences = data.get("sequences", [])
         
         all_elements = (
-            state.start_events + state.activities + 
+            state.start_events + activity_names + 
             [gw.get("condition", "") for gw in state.gateways] + 
             state.end_events
         )

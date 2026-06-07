@@ -111,7 +111,6 @@ def _format_sequences(state: ProcessModel) -> str:
 def _validate_and_clean_activities(activities: List[str]) -> List[str]:
     """
     Aplica validação semântica pós-extração:
-    - Remove atividades com mais de MAX_WORDS_ACTIVITY palavras (trunca)
     - Remove atividades que contenham termos legais
     - Remove duplicatas preservando a ordem
     """
@@ -121,10 +120,6 @@ def _validate_and_clean_activities(activities: List[str]) -> List[str]:
         name = name.strip()
         if not name:
             continue
-        # Trunca se tiver mais de N palavras
-        words = name.split()
-        if len(words) > _MAX_WORDS_ACTIVITY:
-            name = " ".join(words[:_MAX_WORDS_ACTIVITY])
         # Verifica termos legais
         lower_name = name.lower()
         if any(term in lower_name for term in _LEGAL_TERMS):
@@ -198,7 +193,7 @@ class RefinementAgent(BaseAgent):
             .replace("{ELEMENTOS_ATUAIS}", _format_elements(state))
         )
 
-        raw = generate(prompt)
+        raw = generate(prompt, model="mistral")
         data = json.loads(_extract_json(raw))
 
         # Atualiza estado com novos elementos (formato antigo: list[str])
@@ -215,7 +210,7 @@ class RefinementAgent(BaseAgent):
         ]
 
         # Validação semântica pós-extração
-        # state.activities = _validate_and_clean_activities(state.activities)
+        state.activities = _validate_and_clean_activities(state.activities)
 
         # Remove activities que estão como start_events (evita IDs duplicados)
         start_set = set(state.start_events)
@@ -237,7 +232,7 @@ class RefinementAgent(BaseAgent):
             .replace("{SEQUENCIAS_ATUAIS}", _format_sequences(state))
         )
 
-        raw = generate(prompt)
+        raw = generate(prompt, model="mistral")
         logger.debug("RefinementAgent._refine_modeling raw LLM:\n%s", raw)
 
         try:

@@ -1,6 +1,6 @@
-# Guia de Setup — Ollama + Mistral (Local)
+# Guia de Setup — Ollama + Mistral / Qwen 2.5 (Local)
 
-Este documento explica como instalar e configurar o Ollama com o modelo Mistral em qualquer máquina (Windows, Linux ou macOS) para executar o projeto `bpmn-multiagent` sem depender de APIs pagas.
+Este documento explica como instalar e configurar o Ollama com o modelo Mistral / Qwen 2.5 em qualquer máquina (Windows, Linux ou macOS) para executar o projeto `bpmn-multiagent` sem depender de APIs pagas.
 
 ---
 
@@ -42,34 +42,37 @@ Arraste para `/Applications` e abra o aplicativo.
 
 ---
 
-## 2. Baixar o modelo Mistral
+## 2. Baixar os modelos
 
 ```bash
 ollama pull mistral
+ollama pull qwen2.5
 ```
 
-Tamanho: ~4.4 GB. O download é feito uma única vez.
+Tamanhos: Mistral ~4.4 GB, Qwen 2.5 ~4.7 GB. O download é feito uma única vez.
 
-Verificar se o modelo está disponível:
+Verificar se os modelos estão disponíveis:
 ```bash
 ollama list
 ```
 
 Saída esperada:
 ```
-NAME      ID              SIZE      MODIFIED
-mistral   f5074b1221da    4.4 GB    2 days ago
+NAME        ID              SIZE      MODIFIED
+mistral     f5074b1221da    4.4 GB    2 days ago
+qwen2.5     845dbda0ea48    4.7 GB    2 days ago
 ```
 
 ---
 
-## 3. Testar o modelo
+## 3. Testar os modelos
 
 ```bash
 ollama run mistral "Responda em português: 1+1 é igual a?"
+ollama run qwen2.5 "Responda em português: 1+1 é igual a?"
 ```
 
-Se responder `2`, está funcionando.
+Se ambos responderem `2`, está funcionando.
 
 ---
 
@@ -101,7 +104,7 @@ pip install -e ".[dev]"
 python -c "from src.llm.provider import generate; print(generate('Responda em português: 1+1 é igual a?'))"
 ```
 
-Deve imprimir a resposta do Mistral.
+Deve imprimir a resposta do modelo configurado.
 
 ---
 
@@ -130,9 +133,9 @@ pytest tests/ -v
 |---|---|
 | `ollama: command not found` | Reinstale o Ollama ou adicione ao PATH |
 | `connection refused` | Execute `ollama serve` em outro terminal (Linux/macOS). No Windows, o serviço inicia automaticamente. |
-| `model not found` | Execute `ollama pull mistral` |
-| `out of memory` | O Mistral precisa de ~8 GB de RAM livre. Feche outros aplicativos ou use um modelo menor: `ollama pull phi` |
-| Respostas muito lentas | O Mistral roda em CPU. Em máquinas sem GPU, cada chamada pode levar 30-90 segundos. É normal. |
+| `model not found` | Execute `ollama pull mistral` ou `ollama pull qwen2.5` |
+| `out of memory` | Os modelos precisam de ~8 GB de RAM livre. Feche outros aplicativos ou use um modelo menor: `ollama pull phi` |
+| Respostas muito lentas | Os modelos rodam em CPU. Em máquinas sem GPU, cada chamada pode levar 30-90 segundos. É normal. |
 
 ---
 

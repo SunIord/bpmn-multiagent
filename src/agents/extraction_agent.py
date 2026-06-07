@@ -72,7 +72,7 @@ class ExtractionAgent(BaseAgent):
         template = self._load_prompt("extraction.txt")
         prompt = template.replace("{TEXTO}", state.raw_input.strip())
 
-        raw_response = generate(prompt)
+        raw_response = generate(prompt, model="qwen2.5")
         json_str = _extract_json(raw_response)
 
         try:
@@ -85,15 +85,25 @@ class ExtractionAgent(BaseAgent):
                 f"Resposta (primeiros 300 chars): {preview}"
             ) from exc
 
-        # ── Parse de activities (lista de strings) ──
+        # ── Parse de activities (compatível com ambos os formatos) ──
         raw_activities = data.get("activities", [])
         activities: list[str] = []
+        actors_from_activities: list[str] = []
 
         for item in raw_activities:
             if isinstance(item, str):
+                # Formato antigo: string simples
                 name = item.strip()
                 if name:
                     activities.append(name)
+            elif isinstance(item, dict):
+                # Formato novo: {"name": "...", "actor": "..."}
+                name = str(item.get("name", "")).strip()
+                actor = str(item.get("actor", "")).strip()
+                if name:
+                    activities.append(name)
+                    if actor:
+                        actors_from_activities.append(actor)
 
         # ── Parse de start_events e end_events ──
         start_events = [str(s).strip() for s in data.get("start_events", []) if str(s).strip()]
@@ -105,6 +115,10 @@ class ExtractionAgent(BaseAgent):
 
         # ── Parse de atores ──
         actors = [str(a).strip() for a in data.get("actors", []) if str(a).strip()]
+        # Adiciona atores vindos das atividades
+        for a in actors_from_activities:
+            if a not in actors:
+                actors.append(a)
 
         # ── Gateways ──
         raw_gateways = data.get("gateways", [])
