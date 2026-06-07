@@ -85,15 +85,15 @@ class ExtractionAgent(BaseAgent):
                 f"Resposta (primeiros 300 chars): {preview}"
             ) from exc
 
-        # ── Parse de activities (formato antigo: lista de strings) ──
+        # ── Parse de activities (lista de strings) ──
         raw_activities = data.get("activities", [])
-        normalized_activities: list[dict[str, str]] = []
+        activities: list[str] = []
 
         for item in raw_activities:
             if isinstance(item, str):
                 name = item.strip()
                 if name:
-                    normalized_activities.append({"name": name, "actor": ""})
+                    activities.append(name)
 
         # ── Parse de start_events e end_events ──
         start_events = [str(s).strip() for s in data.get("start_events", []) if str(s).strip()]
@@ -101,10 +101,7 @@ class ExtractionAgent(BaseAgent):
 
         # ── Remove de activities qualquer item cujo nome já está em start_events ──
         start_event_names = set(start_events)
-        normalized_activities = [
-            act for act in normalized_activities
-            if act["name"] not in start_event_names
-        ]
+        activities = [a for a in activities if a not in start_event_names]
 
         # ── Parse de atores ──
         actors = [str(a).strip() for a in data.get("actors", []) if str(a).strip()]
@@ -121,7 +118,7 @@ class ExtractionAgent(BaseAgent):
         ]
 
         # ── Popula o estado ──
-        state.activities = normalized_activities
+        state.activities = activities
         state.start_events = start_events
         state.end_events = end_events
         state.actors = actors

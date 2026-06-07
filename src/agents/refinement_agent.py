@@ -165,31 +165,25 @@ class RefinementAgent(BaseAgent):
         # Snapshot antes de modificar
         state.snapshot()
         state.iteration += 1
-        logger.info("RefinementAgent: iteração %d com %d erro(s).", state.iteration, len(errors))
+        logger.warning("RefinementAgent: iteração %d com %d erro(s).", state.iteration, len(errors))
 
-        # ── 1. Re-extração de elementos ─────────────────────────────────────
+        # ── 1. Re-extração de elementos (não bloqueia se falhar) ────────────
         try:
             self._refine_extraction(state, errors)
+            logger.info("RefinementAgent: re-extração OK.")
         except Exception as exc:
-            logger.exception("RefinementAgent: falha na re-extração.")
-            state.validation["errors"].append(
-                f"RefinementAgent (iter {state.iteration}): erro na re-extração — {exc}"
-            )
-            return state
+            logger.error("RefinementAgent: re-extração falhou (%s). Continuando com elementos atuais.", exc)
 
-        # ── 2. Re-modelagem de sequências ───────────────────────────────────
+        # ── 2. Re-modelagem de sequências (sempre executa) ──────────────────
         try:
             self._refine_modeling(state, errors)
+            logger.info("RefinementAgent: re-modelagem OK.")
         except Exception as exc:
-            logger.exception("RefinementAgent: falha na re-modelagem.")
-            state.validation["errors"].append(
-                f"RefinementAgent (iter {state.iteration}): erro na re-modelagem — {exc}"
-            )
-            return state
+            logger.error("RefinementAgent: re-modelagem falhou (%s). Continuando sem novas sequências.", exc)
 
         # ── 3. Invalida XML antigo (orquestrador chamará BPMNAgent) ─────────
         state.bpmn_xml = ""
-        logger.info("RefinementAgent: elementos re-extraídos e re-modelados. bpmn_xml limpo para regeneração.")
+        logger.info("RefinementAgent: bpmn_xml limpo para regeneração.")
         return state
 
     # ── Métodos auxiliares ──────────────────────────────────────────────────
@@ -244,17 +238,38 @@ class RefinementAgent(BaseAgent):
         )
 
         raw = generate(prompt)
-        data = json.loads(_extract_json(raw))
+        logger.debug("RefinementAgent._refine_modeling raw LLM:\n%s", raw)
+
+        try:
+            data = json.loads(_extract_json(raw))
+        except json.JSONDecodeError as exc:
+            logger.error("RefinementAgent: JSON inválido na re-modelagem (%s). raw=%r", exc, raw[:300])
+            raise
 
         raw_sequences = data.get("sequences", [])
-        state.sequences = [
+        logger.debug("RefinementAgent: raw_sequences extraído: %r", raw_sequences)
+
+        parsed = [
             {
                 "source": str(seq.get("source", "")),
                 "target": str(seq.get("target", "")),
-                "condition": str(seq.get("condition", "")) if seq.get("condition") and str(seq.get("condition")).lower() != "null" else "",
+                "condition": (
+                    str(seq.get("condition", ""))
+                    if seq.get("condition") and str(seq.get("condition")).lower() != "null"
+                    else ""
+                ),
             }
             for seq in raw_sequences
             if isinstance(seq, dict) and seq.get("source") and seq.get("target")
         ]
 
+        if not parsed:
+            logger.warning(
+                "RefinementAgent: LLM retornou sequences vazio — mantendo sequências anteriores. "
+                "raw_sequences=%r",
+                raw_sequences,
+            )
+            return
+
+        state.sequences = parsed
         logger.info("RefinementAgent: re-modelagem concluída — %d sequências.", len(state.sequences))

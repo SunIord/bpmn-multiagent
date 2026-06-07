@@ -96,7 +96,7 @@ class ModelingAgent(BaseAgent):
             template
             .replace("{TEXTO_ORIGINAL}", state.raw_input.strip())
             .replace("{START_EVENTS}", _format_list(state.start_events))
-            .replace("{ACTIVITIES}", _format_list([a["name"] for a in state.activities]))
+            .replace("{ACTIVITIES}", _format_list(state.activities))
             .replace("{GATEWAYS}", _format_gateways(state.gateways))
             .replace("{END_EVENTS}", _format_list(state.end_events))
         )
@@ -116,9 +116,8 @@ class ModelingAgent(BaseAgent):
 
         raw_sequences = data.get("sequences", [])
         
-        activity_names = [a["name"] for a in state.activities]
         all_elements = (
-            state.start_events + activity_names + 
+            state.start_events + state.activities + 
             [gw.get("condition", "") for gw in state.gateways] + 
             state.end_events
         )
