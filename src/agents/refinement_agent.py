@@ -215,7 +215,7 @@ class RefinementAgent(BaseAgent):
         ]
 
         # Validação semântica pós-extração
-        state.activities = _validate_and_clean_activities(state.activities)
+        # state.activities = _validate_and_clean_activities(state.activities)
 
         # Remove activities que estão como start_events (evita IDs duplicados)
         start_set = set(state.start_events)
