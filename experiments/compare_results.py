@@ -1,9 +1,11 @@
 """
-Script de comparação de resultados — Baseline vs Multiagente.
+Script de comparação de resultados — Baseline vs Multiagente (Sprint 3).
 
 Calcula métricas de qualidade (corretude, completude, clareza) para todos os
 XMLs gerados pelos pipelines baseline e multiagente, comparando com o ground
 truth disponível e gerando um relatório em markdown.
+
+Suporta os 3 tipos de entrada da Sprint 3: freetext, structured, noisy.
 
 Execução:
     python experiments/compare_results.py
@@ -24,31 +26,47 @@ from src.evaluation.metrics import compute_all_metrics  # noqa: E402
 # Caminhos
 OUTPUT_BASELINE = PROJECT_ROOT / "data" / "outputs" / "baseline"
 OUTPUT_MULTIAGENT = PROJECT_ROOT / "data" / "outputs" / "multiagent"
-GROUND_TRUTH_PATH = PROJECT_ROOT / "tests" / "fixtures" / "expected_output.bpmn"
-REPORT_PATH = PROJECT_ROOT / "docs" / "sprint2_comparison.md"
+REPORT_PATH = PROJECT_ROOT / "docs" / "sprint3_comparison.md"
 
 # Mapeia processo → ground truth correspondente
-# Apenas o Processo 1 tem ground truth definido
+# Inclui tanto os nomes antigos (processo1_pedido) quanto os novos (Prompt1_structured)
 PROCESS_GROUND_TRUTHS = {
+    # Nomes antigos (compatibilidade)
     "processo1_pedido": PROJECT_ROOT / "data" / "ground_truth" / "processo1_pedido.bpmn",
     "processo2_reembolso": PROJECT_ROOT / "data" / "ground_truth" / "processo2_reembolso.bpmn",
     "processo3_clinica": PROJECT_ROOT / "data" / "ground_truth" / "processo3_clinica.bpmn",
+    # Nomes novos (Sprint 3)
+    "Prompt1_structured": PROJECT_ROOT / "data" / "ground_truth" / "processo1_pedido.bpmn",
+    "Prompt2_freetext": PROJECT_ROOT / "data" / "ground_truth" / "processo2_reembolso.bpmn",
+    "Prompt3_noisy": PROJECT_ROOT / "data" / "ground_truth" / "processo3_clinica.bpmn",
 }
 
 
 def collect_xml_files(directory: Path) -> dict[str, Path]:
-    """Coleta todos os arquivos .xml de um diretório, mapeando nome base → caminho."""
+    """
+    Coleta todos os arquivos .xml de um diretório, mapeando nome base → caminho.
+    Remove sufixos _baseline, _multiagent e também _structured, _noisy, _freetext
+    para obter o nome base limpo.
+    """
     if not directory.exists():
         return {}
-    return {
-        f.stem.replace("_baseline", "").replace("_multiagent", ""): f
-        for f in sorted(directory.glob("*.xml"))
-    }
+    result = {}
+    for f in sorted(directory.glob("*.xml")):
+        # Obtém o nome do arquivo sem extensão
+        name = f.stem
+        # Remove sufixos de pipeline (baseline ou multiagent)
+        for suffix in ["_baseline", "_multiagent"]:
+            if name.endswith(suffix):
+                name = name[: -len(suffix)]
+                break
+        # name agora é algo como "Prompt1_structured" ou "processo1_pedido"
+        result[name] = f
+    return result
 
 
 def main() -> None:
     print("=" * 60)
-    print("  COMPARAÇÃO DE MÉTRICAS — Baseline vs Multiagente")
+    print("  COMPARAÇÃO DE MÉTRICAS — Baseline vs Multiagente (Sprint 3)")
     print("=" * 60)
 
     # Coleta arquivos
@@ -99,7 +117,7 @@ def main() -> None:
 
     # Gera relatório em markdown
     lines = [
-        "# Comparação de Métricas — Baseline vs Multiagente (Sprint 2)",
+        "# Comparação de Métricas — Baseline vs Multiagente (Sprint 3)",
         "",
         f"**Data:** {__import__('datetime').date.today()}",
         "**Modelo:** Mistral (Ollama local)",
@@ -107,6 +125,7 @@ def main() -> None:
         "## Metodologia",
         "",
         "Métricas baseadas no framework 3C do artigo de referência: Corretude, Completude, Clareza.",
+        "Testes realizados com 3 tipos de entrada: estruturada (Prompt1), texto livre (Prompt2) e com ruído (Prompt3).",
         "Cada métrica retorna um score entre 0.0 e 1.0.",
         "",
         "## Resultados",
