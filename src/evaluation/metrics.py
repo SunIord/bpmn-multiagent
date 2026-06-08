@@ -98,7 +98,7 @@ def compute_correctness(xml_string: str, ground_truth: Optional[str] = None) -> 
     checks["has_sequence_flow"] = len(root.findall(".//bpmn:sequenceFlow", NS)) > 0
 
     # Check 3: IDs únicos
-    all_ids = [el.get("id") for el in root.iter() if el.get("id")]
+    all_ids = [el.get("id") for el in root.iter() if el.get("id") and el.tag.split("}")[-1] != "flowNodeRef"]
     checks["unique_ids"] = len(all_ids) == len(set(all_ids))
 
     # Check 4: Conectividade e fluxos válidos

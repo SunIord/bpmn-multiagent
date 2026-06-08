@@ -145,7 +145,7 @@ ollama --version
 ## 1. Clonar o repositório
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone https://github.com/SunIord/bpmn-multiagent
 cd bpmn-multiagent
 ```
 
@@ -433,10 +433,10 @@ Consumo típico:
 
 | Nome           | Papel                        |
 | -------------- | ---------------------------- |
-| Tiago Henrique | PO & Desenvolvedor           |
+| Tiago Henrique | Porra nenhuma          |
 | João Victor    | Scrum Master & Desenvolvedor |
 | João Pedro     | Desenvolvedor                |
-| Isaac          | Desenvolvedor                |
+| Isaac          | Autista               |
 
 ---
 
