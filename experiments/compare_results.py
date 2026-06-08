@@ -31,14 +31,9 @@ REPORT_PATH = PROJECT_ROOT / "docs" / "sprint3_comparison.md"
 # Mapeia processo → ground truth correspondente
 # Inclui tanto os nomes antigos (processo1_pedido) quanto os novos (Prompt1_structured)
 PROCESS_GROUND_TRUTHS = {
-    # Nomes antigos (compatibilidade)
-    "processo1_pedido": PROJECT_ROOT / "data" / "ground_truth" / "processo1_pedido.bpmn",
-    "processo2_reembolso": PROJECT_ROOT / "data" / "ground_truth" / "processo2_reembolso.bpmn",
-    "processo3_clinica": PROJECT_ROOT / "data" / "ground_truth" / "processo3_clinica.bpmn",
-    # Nomes novos (Sprint 3)
-    "Prompt1_structured": PROJECT_ROOT / "data" / "ground_truth" / "processo1_pedido.bpmn",
-    "Prompt2_freetext": PROJECT_ROOT / "data" / "ground_truth" / "processo2_reembolso.bpmn",
-    "Prompt3_noisy": PROJECT_ROOT / "data" / "ground_truth" / "processo3_clinica.bpmn",
+    "processo1_pedido_structured": PROJECT_ROOT / "data" / "ground_truth" / "processo1_pedido.bpmn",
+    "processo2_reembolso_freetext": PROJECT_ROOT / "data" / "ground_truth" / "processo2_reembolso.bpmn",
+    "processo3_clinica_noisy": PROJECT_ROOT / "data" / "ground_truth" / "processo3_clinica.bpmn",
 }
 
 
@@ -145,10 +140,14 @@ def main() -> None:
         lines.append("|---|---|---|---|")
 
         metrics_to_compare = []
+
+        # Coleta todas as métricas de ambos (baseline e multiagente)
+        all_keys = set()
         if base:
-            metrics_to_compare = [k for k in base.keys() if k != "aggregate_score" and isinstance(base[k], dict) and "score" in base[k]]
-        elif multi:
-            metrics_to_compare = [k for k in multi.keys() if k != "aggregate_score" and isinstance(multi[k], dict) and "score" in multi[k]]
+            all_keys.update(k for k in base.keys() if k != "aggregate_score" and isinstance(base[k], dict) and "score" in base[k])
+        if multi:
+            all_keys.update(k for k in multi.keys() if k != "aggregate_score" and isinstance(multi[k], dict) and "score" in multi[k])
+        metrics_to_compare = sorted(all_keys)
 
         for metric in metrics_to_compare:
             base_score = base[metric]["score"] if base and metric in base else None
