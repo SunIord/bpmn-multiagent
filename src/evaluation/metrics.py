@@ -33,6 +33,9 @@ STRUCTURAL_TAGS = [
     "parallelGateway",
     "inclusiveGateway",
     "sequenceFlow",
+    "lane",
+    "laneSet",
+    "flowNodeRef",
 ]
 
 
@@ -98,7 +101,17 @@ def compute_correctness(xml_string: str, ground_truth: Optional[str] = None) -> 
     checks["has_sequence_flow"] = len(root.findall(".//bpmn:sequenceFlow", NS)) > 0
 
     # Check 3: IDs únicos
+<<<<<<< HEAD
     all_ids = [el.get("id") for el in root.iter() if el.get("id")]
+=======
+    # Exclui flowNodeRef (não tem id próprio), laneSet e lane têm IDs únicos legítimos
+    excluded_from_id_check = {"flowNodeRef"}
+    all_ids = [
+        el.get("id")
+        for el in root.iter()
+        if el.get("id") and el.tag.split("}")[-1] not in excluded_from_id_check
+    ]
+>>>>>>> 751f48e (feat: métricas realistas com lanes, completude no relatório, aggregate multiagente 0.94 vs baseline 0.55)
     checks["unique_ids"] = len(all_ids) == len(set(all_ids))
 
     # Check 4: Conectividade e fluxos válidos
@@ -137,7 +150,8 @@ def compute_completeness(xml_string: str, ground_truth: str) -> Dict[str, Any]:
     Avalia a completude comparando os elementos do XML gerado com o ground truth.
 
     Compara a presença de elementos estruturais (startEvent, endEvent, task,
-    gateway, sequenceFlow) entre o modelo gerado e o de referência.
+    gateway, sequenceFlow, lane, laneSet, flowNodeRef) entre o modelo gerado
+    e o de referência.
 
     Args:
         xml_string: XML BPMN gerado.
@@ -191,6 +205,10 @@ def compute_clarity(xml_string: str, ground_truth: Optional[str] = None) -> Dict
     - Comprimento significativo dos nomes (> 3 caracteres)
     - Se ground_truth fornecido, similaridade semântica dos nomes
 
+    Nota: apenas elementos com semântica de nome são avaliados (inclui lane,
+    que carrega o nome do ator). laneSet e flowNodeRef são excluídos pois não
+    possuem atributo name significativo.
+
     Args:
         xml_string: XML BPMN gerado.
         ground_truth: Opcional, XML de referência para comparar nomes.
@@ -202,10 +220,12 @@ def compute_clarity(xml_string: str, ground_truth: Optional[str] = None) -> Dict
     if root is None:
         return {"score": 0.0, "details": {"error": "XML mal-formado"}}
 
-    # Elementos que devem ter nome
+    # Elementos que devem ter nome (lane incluída: carrega nome do ator)
+    # laneSet e flowNodeRef excluídos: não possuem atributo name significativo
     nameable_tags = [
         "startEvent", "endEvent", "task", "userTask", "serviceTask",
         "exclusiveGateway", "parallelGateway", "inclusiveGateway",
+        "lane",
     ]
 
     elements_with_name = []
