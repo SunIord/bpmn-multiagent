@@ -9,21 +9,26 @@
 
   <process id="Process_Clinica" isExecutable="false">
 
-    <laneSet>
+    <laneSet id="LaneSet_1">
       <lane id="lane_paciente" name="paciente">
+        <flowNodeRef>StartEvent_1</flowNodeRef>
+        <flowNodeRef>Gateway_1</flowNodeRef>
+        <flowNodeRef>Gateway_2</flowNodeRef>
+        <flowNodeRef>Gateway_3</flowNodeRef>
+        <flowNodeRef>EndEvent_1</flowNodeRef>
       </lane>
       <lane id="lane_recepcionista" name="recepcionista">
-        <flowNodeRef id="Task_1"/>
-        <flowNodeRef id="Task_2"/>
-        <flowNodeRef id="Task_4"/>
-        <flowNodeRef id="Task_5"/>
+        <flowNodeRef>Task_1</flowNodeRef>
+        <flowNodeRef>Task_2</flowNodeRef>
+        <flowNodeRef>Task_4</flowNodeRef>
+        <flowNodeRef>Task_5</flowNodeRef>
       </lane>
       <lane id="lane_sistema" name="sistema">
-        <flowNodeRef id="Task_3"/>
+        <flowNodeRef>Task_3</flowNodeRef>
       </lane>
       <lane id="lane_medico" name="médico">
-        <flowNodeRef id="Task_6"/>
-        <flowNodeRef id="Task_7"/>
+        <flowNodeRef>Task_6</flowNodeRef>
+        <flowNodeRef>Task_7</flowNodeRef>
       </lane>
     </laneSet>
 

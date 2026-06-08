@@ -19,6 +19,7 @@ Permitindo renderização automática em ferramentas BPMN.
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any, Dict
 
 from lxml import etree
@@ -224,47 +225,137 @@ class BPMNAgent(BaseAgent):
 
             current_x += 150
 
+        ## INICIO LANE
         # =========================================================
         # LANESET
         # =========================================================
 
-        if state.actors:
+        # Cria o elemento <laneSet> dentro do processo BPMN.
+        # O laneSet é o "container" que guarda todas as lanes.
+        lane_set = etree.SubElement(
+            process,
+            "laneSet",
+            id="LaneSet_1",
+        )
 
-            lane_set = etree.SubElement(
-                process,
-                "laneSet",
-                id="LaneSet_1",
+        # Verifica se não existe nenhum ator definido.
+        # Exemplo:
+        # state.actors = []
+        if not state.actors:
+
+            # Cria uma única lane chamada "Processo".
+            # Ela será usada quando não houver divisão por responsáveis.
+            lane = etree.SubElement(
+                lane_set,
+                "lane",
+                id="Lane_Processo",
+                name="Processo",
             )
 
-            # Mapeia ator → lista de task_ids
-            actor_task_ids: Dict[str, list[str]] = {actor: [] for actor in state.actors}
+            # Percorre todos os elementos BPMN criados
+            # (eventos, tarefas e gateways).
+            for node_id in id_map.values():
 
+                # Cria um <flowNodeRef> dentro da lane.
+                # Esse elemento aponta para um nó do processo.
+                fnr = etree.SubElement(lane, "flowNodeRef")
+
+                # Define qual nó pertence à lane.
+                fnr.text = node_id
+
+        else:
+
+            # Caso existam atores, cria um dicionário
+            # onde cada ator terá uma lista de tarefas.
+            #
+            # Exemplo:
+            # {
+            #   "Cliente": [],
+            #   "Atendente": []
+            # }
+            actor_task_ids = {
+                actor: []
+                for actor in state.actors
+            }
+
+            # Percorre todas as atividades do processo.
             for activity in state.activities:
-                task_name = activity if isinstance(activity, str) else activity.get("name", "")
-                task_id = id_map.get(task_name)
-                if not task_id:
+
+                # Ignora atividades que não sejam dicionários.
+                #
+                # Esperado:
+                # {"name": "...", "actor": "..."}
+                #
+                # Ignorado:
+                # "Receber pedido"
+                if not isinstance(activity, dict):
                     continue
 
-                # Se a atividade tem ator, associa a ele; senão, vai para o primeiro ator
-                actor = ""
-                if isinstance(activity, dict):
-                    actor = activity.get("actor", "")
-                if not actor or actor not in actor_task_ids:
-                    actor = state.actors[0] if state.actors else "Processo"
-                    if actor not in actor_task_ids:
-                        actor_task_ids[actor] = []
-                actor_task_ids[actor].append(task_id)
+                # Obtém o nome da atividade.
+                task_name = activity.get("name", "")
 
+                # Procura o ID BPMN dessa atividade.
+                #
+                # Exemplo:
+                # "Receber pedido" -> "task_1"
+                task_id = id_map.get(task_name)
+
+                # Obtém o ator responsável pela atividade.
+                #
+                # Exemplo:
+                # "Cliente"
+                actor = activity.get("actor")
+
+                # Só adiciona a tarefa se:
+                # 1) ela possuir um ID BPMN
+                # 2) o ator existir em state.actors
+                if task_id and actor in actor_task_ids:
+
+                    # Adiciona a tarefa na lista daquele ator.
+                    #
+                    # Exemplo:
+                    # {
+                    #   "Cliente": ["task_1", "task_2"]
+                    # }
+                    actor_task_ids[actor].append(task_id)
+
+            # Agora percorre cada ator e suas tarefas.
             for actor_name, task_ids in actor_task_ids.items():
-                lane_id = "Lane_" + actor_name.replace(" ", "_")
+
+                # Remove caracteres que podem causar problemas
+                # no ID XML.
+                #
+                # Exemplo:
+                # "Área Financeira"
+                # vira
+                # "_rea_Financeira"
+                safe_id = re.sub(
+                    r'[^a-zA-Z0-9_]',
+                    '_',
+                    actor_name
+                )
+
+                # Cria a lane do ator.
                 lane = etree.SubElement(
                     lane_set,
                     "lane",
-                    id=lane_id,
+                    id=f"Lane_{safe_id}",
                     name=actor_name,
                 )
+
+                # Percorre todas as tarefas do ator.
                 for tid in task_ids:
-                    fnr = etree.SubElement(lane, "flowNodeRef")
+
+                    # Cria uma referência para a tarefa.
+                    fnr = etree.SubElement(
+                        lane,
+                        "flowNodeRef"
+                    )
+
+                    # Associa a tarefa à lane.
+                    #
+                    # Exemplo:
+                    # <flowNodeRef>task_1</flowNodeRef>
                     fnr.text = tid
 
         # =========================================================

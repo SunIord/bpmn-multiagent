@@ -9,13 +9,17 @@
 
   <process id="Process_PedidoOnline" isExecutable="false">
 
-    <laneSet>
+    <laneSet id="LaneSet_1">
       <lane id="lane_cliente" name="cliente">
+        <flowNodeRef>StartEvent_1</flowNodeRef>
+        <flowNodeRef>Gateway_1</flowNodeRef>
       </lane>
       <lane id="lane_sistema" name="sistema">
-        <flowNodeRef id="Task_1"/>
-        <flowNodeRef id="Task_2"/>
-        <flowNodeRef id="Task_3"/>
+        <flowNodeRef>Task_1</flowNodeRef>
+        <flowNodeRef>Task_2</flowNodeRef>
+        <flowNodeRef>Task_3</flowNodeRef>
+        <flowNodeRef>EndEvent_1</flowNodeRef>
+        <flowNodeRef>EndEvent_2</flowNodeRef>
       </lane>
     </laneSet>
 

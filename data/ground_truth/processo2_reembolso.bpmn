@@ -9,20 +9,24 @@
 
   <process id="Process_ReembolsoDespesas" isExecutable="false">
 
-    <laneSet>
+    <laneSet id="LaneSet_1">
       <lane id="lane_funcionario" name="funcionário">
+        <flowNodeRef>StartEvent_1</flowNodeRef>
       </lane>
       <lane id="lane_gerente" name="gerente">
-        <flowNodeRef id="Task_1"/>
-        <flowNodeRef id="Task_2"/>
-        <flowNodeRef id="Task_3"/>
-        <flowNodeRef id="Task_6"/>
+        <flowNodeRef>Task_1</flowNodeRef>
+        <flowNodeRef>Task_2</flowNodeRef>
+        <flowNodeRef>Task_3</flowNodeRef>
+        <flowNodeRef>Gateway_1</flowNodeRef>
+        <flowNodeRef>Task_6</flowNodeRef>
       </lane>
       <lane id="lane_diretor" name="diretor financeiro">
-        <flowNodeRef id="Task_4"/>
+        <flowNodeRef>Task_4</flowNodeRef>
       </lane>
       <lane id="lane_rh" name="RH">
-        <flowNodeRef id="Task_5"/>
+        <flowNodeRef>Task_5</flowNodeRef>
+        <flowNodeRef>EndEvent_1</flowNodeRef>
+        <flowNodeRef>EndEvent_2</flowNodeRef>
       </lane>
     </laneSet>
 
@@ -34,6 +38,7 @@
     <task id="Task_4" name="diretor financeiro aprova"/>
     <task id="Task_5" name="RH processa pagamento"/>
     <task id="Task_6" name="notificar funcionário sobre reprovação"/>
+
     <exclusiveGateway id="Gateway_1" name="valor menor que 500 reais?"/>
 
     <endEvent id="EndEvent_1" name="processo encerrado com sucesso"/>
