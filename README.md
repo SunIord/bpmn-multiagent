@@ -433,10 +433,10 @@ Consumo típico:
 
 | Nome           | Papel                        |
 | -------------- | ---------------------------- |
-| Tiago Henrique | Porra nenhuma          |
+| Tiago Henrique | PO & Desenvolvedor          |
 | João Victor    | Scrum Master & Desenvolvedor |
 | João Pedro     | Desenvolvedor                |
-| Isaac          | Autista               |
+| Isaac          | Desenvolvedor              |
 
 ---
 
