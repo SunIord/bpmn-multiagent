@@ -14,11 +14,15 @@ bpmn-multiagent/
 │   ├── bottleneck-analysis.pdf
 │   ├── planning.pdf
 │   ├── usage_guide.md
-│   └── decisions/
-│       ├── ADR-001-multiagent.md
-│       ├── ADR-002-langgraph.md
-│       ├── ADR-003-lxml.md
-│       └── ADR-004-processmodel.md
+│   ├── decisions/
+│   |   ├── ADR-001-multiagent.md
+│   |   ├── ADR-002-langgraph.md
+│   |   ├── ADR-003-lxml.md
+│   |   └── ADR-004-processmodel.md
+│   └── chart/
+│       ├── index.html          
+│       ├── chart.js            
+│       └── chart.css           
 │
 ├── data/
 │   ├── inputs/
@@ -46,7 +50,8 @@ bpmn-multiagent/
 │   │   ├── modeling_agent.py       # Agente 2: Modelagem lógica (estrutura → fluxo)
 │   │   ├── bpmn_agent.py           # Agente 3: Geração BPMN (fluxo → XML BPMN)
 │   │   ├── validation_agent.py     # Agente 4: Validação estrutural
-│   │   └── refinement_agent.py     # Agente 5: Refinamento iterativo
+│   │   ├── refinement_agent.py     # Agente 5: Refinamento iterativo
+│   │   └── render_agent.py         # Agente 6: Renderização de imagens
 │   │
 │   ├── pipeline/                   # Orquestração do fluxo entre agentes
 │   │   ├── __init__.py

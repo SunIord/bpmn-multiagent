@@ -1,0 +1,58 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; }
+
+header {
+  padding: 28px 40px 20px;
+  background: #161b27;
+  border-bottom: 1px solid #2d3748;
+}
+header h1 { font-size: 1.5rem; font-weight: 700; color: #f0f4ff; }
+header p  { font-size: 0.82rem; color: #64748b; margin-top: 4px; }
+
+.legend {
+  display: flex; gap: 20px; align-items: center;
+  padding: 10px 40px;
+  background: #0f1117;
+  border-bottom: 1px solid #1e2535;
+  font-size: 0.8rem; color: #94a3b8;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+
+main { padding: 28px 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+.card {
+  background: #161b27;
+  border: 1px solid #2d3748;
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.card.full  { grid-column: span 3; }
+.card.two   { grid-column: span 2; }
+.card-title {
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.8px; color: #64748b; margin-bottom: 14px;
+}
+canvas { max-height: 240px; }
+
+/* KPIs */
+.kpis { grid-column: span 3; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.kpi { background: #161b27; border: 1px solid #2d3748; border-radius: 10px; padding: 18px; }
+.kpi-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b; margin-bottom: 8px; }
+.kpi-val   { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+.kpi-sub   { font-size: 0.72rem; color: #64748b; margin-top: 5px; }
+.orange { color: #f97316; } .blue { color: #3b82f6; }
+.green  { color: #4ade80; } .red   { color: #f87171; }
+.arrow  { font-size: 1rem; color: #475569; margin: 0 4px; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+th { color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;
+     padding: 8px 10px; text-align: left; border-bottom: 1px solid #2d3748; }
+td { padding: 9px 10px; border-bottom: 1px solid #1e2535; }
+tr:last-child td { border-bottom: none; }
+.cell-b { color: #f97316; font-weight: 600; }
+.cell-m { color: #3b82f6; font-weight: 600; }
+.cell-ok { color: #4ade80; }
+.cell-no { color: #f87171; }
+.bar-wrap { background: #1e2535; border-radius: 999px; height: 6px; }
+.bar-fill { height: 6px; border-radius: 999px; }

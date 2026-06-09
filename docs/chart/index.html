@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BPMN — One-Shot vs Multiagente</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="chart.css">
+</head>
+<body>
+
+<header>
+  <h1>One-Shot Baseline &nbsp;×&nbsp; Pipeline Multiagente — Resultados</h1>
+  <p>Tópicos Avançados em Engenharia de Software · CIn UFPE 2026 · Modelos: Mistral + Qwen 2.5 (Ollama)</p>
+</header>
+
+<div class="legend">
+  <span><span class="dot" style="background:#f97316"></span>One-Shot Baseline</span>
+  <span><span class="dot" style="background:#3b82f6"></span>Pipeline Multiagente</span>
+  <span style="margin-left:auto;font-size:0.72rem;color:#475569">3 tipos de prompt avaliados: Estruturado · Texto livre · Texto com ruído</span>
+</div>
+
+<main>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-label">Cobertura de Requisitos (máx. baseline)</div>
+      <div class="kpi-val orange">17,6%</div>
+      <div class="kpi-sub">3 de 17 requisitos · Prompt estruturado</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Tasks — média por processo</div>
+      <div class="kpi-val"><span class="orange">5,7</span><span class="arrow">→</span><span class="blue">8,0</span></div>
+      <div class="kpi-sub green">+40% mais tarefas modeladas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Lanes / Pools (atores)</div>
+      <div class="kpi-val"><span class="orange">0</span><span class="arrow">→</span><span class="blue">3,7</span></div>
+      <div class="kpi-sub">Baseline: nenhum · Multiagente: sempre presente</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Total de elementos — média</div>
+      <div class="kpi-val"><span class="orange">21</span><span class="arrow">→</span><span class="blue">26</span></div>
+      <div class="kpi-sub green">+24% de riqueza estrutural</div>
+    </div>
+  </div>
+
+  <!-- Cobertura de requisitos -->
+  <div class="card">
+    <div class="card-title">Cobertura de Requisitos — One-Shot</div>
+    <canvas id="coverageChart"></canvas>
+  </div>
+
+  <!-- Tasks -->
+  <div class="card">
+    <div class="card-title">Tasks por Prompt</div>
+    <canvas id="tasksChart"></canvas>
+  </div>
+
+  <!-- Lanes -->
+  <div class="card">
+    <div class="card-title">Lanes / Pools por Prompt</div>
+    <canvas id="lanesChart"></canvas>
+  </div>
+
+  <!-- Radar -->
+  <div class="card">
+    <div class="card-title">Perfil Estrutural Médio</div>
+    <canvas id="radarChart"></canvas>
+  </div>
+
+  <!-- Sequence flows -->
+  <div class="card">
+    <div class="card-title">Sequence Flows por Prompt</div>
+    <canvas id="flowsChart"></canvas>
+  </div>
+
+  <!-- Gateways -->
+  <div class="card">
+    <div class="card-title">Gateways por Prompt</div>
+    <canvas id="gatewaysChart"></canvas>
+  </div>
+
+  <!-- Breakdown table full -->
+  <div class="card full">
+    <div class="card-title">Decomposição Completa por Elemento</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Prompt</th>
+          <th>Abordagem</th>
+          <th>Tasks</th>
+          <th>Gateways</th>
+          <th>Eventos</th>
+          <th>Seq. Flows</th>
+          <th>Lanes/Pools</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2"><strong>P1 · Estruturado</strong></td>
+          <td class="cell-b">One-Shot</td>
+          <td class="cell-b">4</td><td class="cell-b">1</td><td class="cell-b">4</td>
+          <td class="cell-b">5</td><td class="cell-no">0</td><td class="cell-b">14</td>
+        </tr>
+        <tr>
+          <td class="cell-m">Multiagente</td>
+          <td class="cell-m">7</td><td class="cell-m">2</td><td class="cell-m">3</td>
+          <td class="cell-m">7</td><td class="cell-ok">5</td><td class="cell-m">25</td>
+        </tr>
+        <tr>
+          <td rowspan="2"><strong>P2 · Texto Livre</strong></td>
+          <td class="cell-b">One-Shot</td>
+          <td class="cell-b">8</td><td class="cell-b">3</td><td class="cell-b">2</td>
+          <td class="cell-b">16</td><td class="cell-no">0</td><td class="cell-b">29</td>
+        </tr>
+        <tr>
+          <td class="cell-m">Multiagente</td>
+          <td class="cell-m">8</td><td class="cell-m">1</td><td class="cell-m">3</td>
+          <td class="cell-m">11</td><td class="cell-ok">4</td><td class="cell-m">28</td>
+        </tr>
+        <tr>
+          <td rowspan="2"><strong>P3 · Com Ruído</strong></td>
+          <td class="cell-b">One-Shot</td>
+          <td class="cell-b">5</td><td class="cell-b">2</td><td class="cell-b">5</td>
+          <td class="cell-b">8</td><td class="cell-no">0</td><td class="cell-b">20</td>
+        </tr>
+        <tr>
+          <td class="cell-m">Multiagente</td>
+          <td class="cell-m">9</td><td class="cell-m">1</td><td class="cell-m">3</td>
+          <td class="cell-m">9</td><td class="cell-ok">2</td><td class="cell-m">25</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Requirement coverage table -->
+  <div class="card full">
+    <div class="card-title">Cobertura de Requisitos — Análise dos 17 Requisitos do Processo (One-Shot)</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Prompt</th><th>Cobertos</th><th>Total</th><th>%</th><th>Barra</th><th>Observações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>P1 · Estruturado</strong></td>
+          <td class="orange">3</td><td>17</td>
+          <td class="orange"><strong>17,6%</strong></td>
+          <td style="width:180px"><div class="bar-wrap"><div class="bar-fill" style="width:17.6%;background:#f97316"></div></div></td>
+          <td class="red">Gateway sem fluxo de saída · Evento final desconectado · Sem lógica de negócio</td>
+        </tr>
+        <tr>
+          <td><strong>P2 · Texto Livre</strong></td>
+          <td class="orange">2</td><td>17</td>
+          <td class="orange"><strong>11,8%</strong></td>
+          <td><div class="bar-wrap"><div class="bar-fill" style="width:11.8%;background:#f97316"></div></div></td>
+          <td class="red">Início + tarefa genérica + fim · Sem lanes · Sem gateways · Sem lógica</td>
+        </tr>
+        <tr>
+          <td><strong>P3 · Com Ruído</strong></td>
+          <td style="color:#fbbf24">~4–5</td><td>17</td>
+          <td style="color:#fbbf24"><strong>~26%</strong></td>
+          <td><div class="bar-wrap"><div class="bar-fill" style="width:26%;background:#fbbf24"></div></div></td>
+          <td style="color:#fbbf24">Melhor resultado do baseline · Ignorou ruído corretamente · Ainda incompleto</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<script src="chart.js"></script>
+</body>
+</html>
