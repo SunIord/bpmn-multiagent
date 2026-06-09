@@ -191,7 +191,7 @@ def main():
                 encoding="utf-8"
             ).strip()
 
-            state = run_pipeline(text)
+            state = run_pipeline(text, render=True)
 
             xml = state.bpmn_xml
 

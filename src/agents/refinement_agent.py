@@ -18,6 +18,7 @@ Fluxo:
 
 from __future__ import annotations
 
+import difflib
 import json
 import logging
 import re
@@ -37,6 +38,15 @@ _LEGAL_TERMS = [
     "prazo", "taxa", "alíquota", "código", "resolução", "portaria",
     "decreto", "instrução normativa", "diário oficial",
 ]
+
+
+def _fuzzy_match(name: str, candidates: list[str], cutoff: float = 0.6) -> str | None:
+    if not candidates:
+        return None
+    if name in candidates:
+        return name
+    matches = difflib.get_close_matches(name, candidates, n=1, cutoff=cutoff)
+    return matches[0] if matches else None
 
 
 def _extract_json(raw: str) -> str:
@@ -266,5 +276,24 @@ class RefinementAgent(BaseAgent):
             )
             return
 
-        state.sequences = parsed
+        # Normaliza nomes contra os elementos conhecidos (mesmo critério do ModelingAgent)
+        activity_names = [
+            str(a) if isinstance(a, str) else str(a.get("name", ""))
+            for a in state.activities
+        ]
+        all_elements = (
+            state.start_events
+            + activity_names
+            + [gw.get("condition", "") for gw in state.gateways]
+            + state.end_events
+        )
+
+        normalized = []
+        for seq in parsed:
+            src = _fuzzy_match(seq["source"], all_elements) or seq["source"]
+            tgt = _fuzzy_match(seq["target"], all_elements) or seq["target"]
+            if src in all_elements and tgt in all_elements:
+                normalized.append({**seq, "source": src, "target": tgt})
+
+        state.sequences = normalized if normalized else parsed
         logger.info("RefinementAgent: re-modelagem concluída — %d sequências.", len(state.sequences))

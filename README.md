@@ -36,7 +36,7 @@ RefinementAgent
    ↓
 RenderAgent
    ↓
-XML BPMN + PNG + SVG
+XML BPMN + HTML (bpmn-js viewer)
 ```
 
 Cada agente possui uma responsabilidade específica e compartilha informações através de um estado global (`ProcessModel`).
@@ -52,7 +52,7 @@ Cada agente possui uma responsabilidade específica e compartilha informações 
 | BPMNAgent       | Gera BPMN XML 2.0 de forma determinística      |
 | ValidationAgent | Executa validações estruturais BPMN            |
 | RefinementAgent | Corrige inconsistências encontradas            |
-| RenderAgent     | Gera imagens PNG e SVG a partir do BPMN        |
+| RenderAgent     | Gera HTML de visualização via bpmn-js (CDN)    |
 
 ---
 
@@ -65,8 +65,7 @@ Cada agente possui uma responsabilidade específica e compartilha informações 
 | Orquestração      | LangGraph          |
 | API               | FastAPI            |
 | Geração XML       | lxml               |
-| Renderização BPMN | bpmn-js            |
-| Captura de imagem | Puppeteer          |
+| Renderização BPMN | bpmn-js (CDN)      |
 | Validação BPMN    | Camunda            |
 | Persistência      | PostgreSQL         |
 | LLM Local         | Ollama             |
@@ -125,16 +124,13 @@ bpmn-multiagent/
 ## Software
 
 * Python 3.11+
-* Node.js 20+
-* npm
 * Ollama
+* Acesso à internet (bpmn-js carregado via CDN no browser)
 
 Verifique:
 
 ```bash
 python --version
-node --version
-npm --version
 ollama --version
 ```
 
@@ -266,50 +262,19 @@ python -c "from src.llm.provider import generate; print(generate('Olá'))"
 
 # Configuração do RenderAgent
 
-O RenderAgent converte BPMN XML em imagens PNG e SVG.
+O RenderAgent gera um arquivo HTML autocontido que abre o BPMN no browser usando **bpmn-js** carregado via CDN.
 
-Tecnologias utilizadas:
+**Não requer instalação adicional** — sem Node.js, sem npm, sem Puppeteer.
 
-* bpmn-js
-* Puppeteer
-* Node.js
+Saída: `data/outputs/rendered/<process_id>.html`
 
----
+Para ativar a renderização ao executar o pipeline:
 
-## Instalar dependências do RenderAgent
+```python
+from src.pipeline.orchestrator import run_pipeline
 
-Entre na pasta:
-
-```bash
-cd renderer
-```
-
-Instale:
-
-```bash
-npm install
-```
-
-Ou manualmente:
-
-```bash
-npm install bpmn-js puppeteer
-```
-
-Verifique:
-
-```bash
-npm list bpmn-js
-npm list puppeteer
-```
-
-Estrutura esperada:
-
-```text
-renderer/
-├── package.json
-├── render_bpmn.js
-└── node_modules/
+state = run_pipeline(texto, render=True)
+print(state.rendered_html_path)
 ```
 
 ---
@@ -350,18 +315,23 @@ data/outputs/multiagent/
 
 ---
 
-## Imagens BPMN
+## HTML de Visualização BPMN
 
 ```text
-data/outputs/render/
+data/outputs/rendered/
 ```
 
-Arquivos:
+Arquivo gerado por execução:
 
 ```text
-processo.png
-processo.svg
+<process_id>.html
 ```
+
+**Abra no browser para visualizar o BPMN interativo via bpmn-js.**
+
+**Ou se quiser abrir todos de uma vez rode no terminal:**
+*Get-ChildItem "data\outputs\rendered\*.html" | ForEach-Object { Start-Process $_.FullName }*
+
 
 ---
 
@@ -424,7 +394,7 @@ Consumo típico:
 | ---------------- | ----------- |
 | Ollama + Mistral | ~4.5 GB     |
 | Python Pipeline  | ~300 MB     |
-| RenderAgent      | ~300-800 MB |
+| RenderAgent      | ~0 MB       |
 | Total            | ~5-6 GB     |
 
 ---
@@ -433,10 +403,10 @@ Consumo típico:
 
 | Nome           | Papel                        |
 | -------------- | ---------------------------- |
-| Tiago Henrique | Porra nenhuma          |
-| João Victor    | Scrum Master & Desenvolvedor |
+| Tiago Henrique | Desenvolvedor                |
+| João Vitor    |  Desenvolvedor                |
 | João Pedro     | Desenvolvedor                |
-| Isaac          | Autista               |
+| Isaac          | Desenvolvedor                |
 
 ---
 

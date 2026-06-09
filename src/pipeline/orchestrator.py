@@ -31,6 +31,7 @@ from src.agents.bpmn_agent import BPMNAgent
 from src.agents.extraction_agent import ExtractionAgent
 from src.agents.modeling_agent import ModelingAgent
 from src.agents.refinement_agent import RefinementAgent
+from src.agents.render_agent import RenderAgent
 from src.agents.validation_agent import ValidationAgent
 from src.pipeline.state import ProcessModel
 
@@ -39,13 +40,14 @@ logger = logging.getLogger(__name__)
 MAX_ITERATIONS = 3
 
 
-def run_pipeline(text: str, input_type: str = "freetext") -> ProcessModel:
+def run_pipeline(text: str, input_type: str = "freetext", render: bool = False) -> ProcessModel:
     """
     Executa o pipeline multiagente completo sobre um texto de processo.
 
     Args:
         text:       Descrição do processo em linguagem natural.
         input_type: Tipo de entrada — "freetext", "structured" ou "noisy".
+        render:     Se True, gera HTML de visualização via RenderAgent.
 
     Returns:
         ProcessModel com todos os campos preenchidos, incluindo
@@ -62,6 +64,7 @@ def run_pipeline(text: str, input_type: str = "freetext") -> ProcessModel:
     bpmn_gen = BPMNAgent()
     validation = ValidationAgent()
     refinement = RefinementAgent()
+    renderer = RenderAgent(open_browser=False)
 
     try:
         # Etapas obrigatórias (executam uma única vez)
@@ -99,6 +102,9 @@ def run_pipeline(text: str, input_type: str = "freetext") -> ProcessModel:
 
         if state.validation.get("is_valid"):
             logger.info("Pipeline: concluído com BPMN válido.")
+            if render:
+                logger.info("Pipeline: iniciando RenderAgent.")
+                state = renderer.run(state)
         else:
             logger.warning(
                 "Pipeline: concluído com BPMN inválido após %d tentativas — %d erro(s).",
