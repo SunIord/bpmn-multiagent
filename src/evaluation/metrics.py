@@ -101,9 +101,6 @@ def compute_correctness(xml_string: str, ground_truth: Optional[str] = None) -> 
     checks["has_sequence_flow"] = len(root.findall(".//bpmn:sequenceFlow", NS)) > 0
 
     # Check 3: IDs únicos
-<<<<<<< HEAD
-    all_ids = [el.get("id") for el in root.iter() if el.get("id")]
-=======
     # Exclui flowNodeRef (não tem id próprio), laneSet e lane têm IDs únicos legítimos
     excluded_from_id_check = {"flowNodeRef"}
     all_ids = [
@@ -111,7 +108,6 @@ def compute_correctness(xml_string: str, ground_truth: Optional[str] = None) -> 
         for el in root.iter()
         if el.get("id") and el.tag.split("}")[-1] not in excluded_from_id_check
     ]
->>>>>>> 751f48e (feat: métricas realistas com lanes, completude no relatório, aggregate multiagente 0.94 vs baseline 0.55)
     checks["unique_ids"] = len(all_ids) == len(set(all_ids))
 
     # Check 4: Conectividade e fluxos válidos
