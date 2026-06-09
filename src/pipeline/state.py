@@ -60,6 +60,9 @@ class ProcessModel(BaseModel):
     # ── Preenchido pelo BPMNAgent ─────────────────────────────────────────────
     bpmn_xml: str = ""
 
+    # ── Preenchido pelo RenderAgent ───────────────────────────────────────────
+    rendered_html_path: str = ""
+
     # ── Preenchido pelo ValidationAgent ──────────────────────────────────────
     validation: dict[str, Any] = Field(default_factory=_default_validation)
     # Estrutura: {"is_valid": bool, "errors": list[str], "warnings": list[str]}

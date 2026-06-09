@@ -254,6 +254,12 @@ class BPMNAgent(BaseAgent):
                         etree.SubElement(lane, "flowNodeRef", id=task_id)
 
         # =========================================================
+        # GARANTIA DE CONECTIVIDADE (safety net)
+        # =========================================================
+
+        self._ensure_connectivity(state)
+
+        # =========================================================
         # SEQUENCE FLOWS
         # =========================================================
 
@@ -415,6 +421,52 @@ class BPMNAgent(BaseAgent):
     # =========================================================
     # HELPERS
     # =========================================================
+
+    def _ensure_connectivity(self, state: ProcessModel) -> None:
+        """
+        Garante que todo endEvent tenha pelo menos uma sequência de entrada
+        e todo startEvent tenha pelo menos uma saída.
+
+        Chamado antes da geração de XML como safety net para compensar
+        falhas de normalização do LLM.
+        """
+        end_set = set(state.end_events)
+        start_set = set(state.start_events)
+
+        # Remove sequências estruturalmente inválidas geradas pelo LLM
+        state.sequences = [
+            seq for seq in state.sequences
+            if seq.get("source", "") not in end_set
+            and seq.get("target", "") not in start_set
+        ]
+
+        target_names = {seq.get("target", "") for seq in state.sequences}
+        source_names = {seq.get("source", "") for seq in state.sequences}
+
+        activity_names = [
+            a if isinstance(a, str) else a.get("name", "")
+            for a in state.activities
+        ]
+
+        for end_name in state.end_events:
+            if end_name in target_names:
+                continue
+            candidates = [a for a in activity_names if a not in source_names]
+            if not candidates:
+                candidates = activity_names[-1:] if activity_names else []
+            for src in candidates:
+                state.sequences.append({"source": src, "target": end_name, "condition": ""})
+                logger.info("BPMNAgent: conectividade corrigida — %s → %s", src, end_name)
+
+        for start_name in state.start_events:
+            if start_name in source_names:
+                continue
+            candidates = [a for a in activity_names if a not in target_names]
+            if not candidates:
+                candidates = activity_names[:1] if activity_names else []
+            for tgt in candidates:
+                state.sequences.append({"source": start_name, "target": tgt, "condition": ""})
+                logger.info("BPMNAgent: conectividade corrigida — %s → %s", start_name, tgt)
 
     @staticmethod
     def _make_id(
